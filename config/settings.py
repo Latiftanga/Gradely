@@ -34,8 +34,9 @@ SHARED_APPS = [
 
     # Third party apps
     'django_celery_beat',
+    'django_htmx',
     
-    # Your shared apps (available to all tenants)
+    'accounts',  # Shared accounts app
 ]
 
 TENANT_APPS = [
@@ -44,25 +45,38 @@ TENANT_APPS = [
     'django.contrib.auth',
     
     # Your tenant-specific apps
-    # Add apps that store tenant-specific data here
+    'accounts',
 ]
 
 INSTALLED_APPS = SHARED_APPS + [
     app for app in TENANT_APPS if app not in SHARED_APPS
 ]
 
+if DEBUG:
+    # Add django_browser_reload only in DEBUG mode
+    INSTALLED_APPS += ["django_browser_reload"]
+
 MIDDLEWARE = [
     'django_tenants.middleware.main.TenantMainMiddleware',  # Must be first
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'accounts.middleware.BlockSchoolAdminMiddleware',
 ]
 
+if DEBUG:
+    # Add django_browser_reload middleware only in DEBUG mode
+    MIDDLEWARE += [
+        "django_browser_reload.middleware.BrowserReloadMiddleware",
+    ]
+
 ROOT_URLCONF = 'config.urls'
+PUBLIC_SCHEMA_URLCONF = 'config.urls_public'
 
 TEMPLATES = [
     {
@@ -105,6 +119,13 @@ DATABASE_ROUTERS = [
     'django_tenants.routers.TenantSyncRouter',
 ]
 
+AUTH_USER_MODEL = 'accounts.SystemUser'
+
+# Custom authentication backend that handles both user types
+AUTHENTICATION_BACKENDS = [
+    'accounts.backend.MultiTenantAuthBackend',
+]
+
 # Django-tenants configuration
 TENANT_MODEL = "schools.School"
 TENANT_DOMAIN_MODEL = "schools.Domain"
@@ -117,8 +138,7 @@ TENANT_SUBFOLDER_PREFIX = False
 PUBLIC_SCHEMA_NAME = 'public'
 
 # Auto-create public schema on migrate
-TENANT_CREATION_FAKES_MIGRATIONS = True
-
+TENANT_CREATION_FAKES_MIGRATIONS = False
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -153,16 +173,23 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = os.getenv('STATIC_URL', '/static/')
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# WhiteNoise configuration for django-tenants
+if DEBUG:
+    WHITENOISE_USE_FINDERS = True  # Serve from app directories in dev
+    WHITENOISE_AUTOREFRESH = True  # Auto-reload on file changes
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Additional static files directories
 STATICFILES_DIRS = [
-    # BASE_DIR / 'static',
+    BASE_DIR / 'static',
 ]
 
 

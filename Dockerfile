@@ -59,11 +59,10 @@ COPY --from=builder /py /py
 # Create non-root user
 RUN adduser \
         --disabled-password \
-        --no-create-home \
         --gecos '' \
         ttek_user && \
     mkdir -p /var/cache/fontconfig /app && \
-    chown -R ttek_user:ttek_user /var/cache/fontconfig /app
+    chown -R ttek_user:ttek_user /var/cache/fontconfig /app /py
 
 WORKDIR /app
 USER ttek_user

@@ -20,7 +20,6 @@
                 </a>
             </div>
             <div class="flex-none">
-                <a href="/admin/" class="btn btn-ghost">Admin Login</a>
                 <a href="#pricing" class="btn btn-primary ml-2">Get Started</a>
             </div>
         </div>
@@ -29,7 +28,9 @@
     <!-- Hero Section -->
     <div class="hero min-h-screen bg-base-100" style="padding-top: 64px;">
         <div class="hero-content flex-col lg:flex-row-reverse">
-            <img src="https://placeimg.com/400/400/tech" class="max-w-sm rounded-lg shadow-2xl" />
+            <div class="lg:max-w-sm rounded-lg shadow-2xl bg-primary-focus flex items-center justify-center h-80 w-80 text-white text-9xl">
+                <i class="fas fa-school"></i>
+            </div>
             <div>
                 <h1 class="text-5xl font-bold">Revolutionize Your School's Management</h1>
                 <p class="py-6">Gradely provides a seamless, all-in-one platform to manage students, teachers, classes, and grades. Built for schools in Ghana, designed for the future.</p>
@@ -111,13 +112,18 @@
             <h2 class="text-4xl font-bold text-center mb-10">Our Partner Schools</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {% for school in schools %}
-                <div class="card bg-base-100 shadow-xl image-full">
-                    <figure><img src="https://placeimg.com/400/225/arch?u={{ school.id }}" alt="{{ school.name }}" /></figure>
-                    <div class="card-body text-white">
-                        <h2 class="card-title">{{ school.name }}</h2>
-                        <p>A leading institution committed to excellence.</p>
-                         <div class="card-actions justify-end">
-                             <a href="#" class="btn btn-primary btn-sm">Visit Portal</a>
+                <div class="card bg-base-100 shadow-xl transition-transform hover:-translate-y-2">
+                    <div class="px-10 pt-10 flex items-center justify-center bg-base-200 h-48 rounded-t-xl">
+                        <i class="fas fa-school text-7xl text-primary"></i>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="card-title">
+                            {{ school.name }}
+                            <div class="badge badge-secondary">{{ school.short_name }}</div>
+                        </h2>
+                        <p>A leading institution committed to excellence in education. Proudly part of the Gradely network.</p>
+                        <div class="card-actions justify-end">
+                            <a href="http://{{ school.domains.first.domain }}:8000" class="btn btn-primary btn-sm" target="_blank">Visit Portal</a>
                         </div>
                     </div>
                 </div>
@@ -161,7 +167,7 @@
     </footer>
     <footer class="footer footer-center p-4 bg-base-300 text-base-content">
         <div>
-            <p>Copyright © 2025 - All right reserved by Gradely</p>
+            <p>Copyright © 2025 - All right reserved by Gradely - <a href="/admin/" class="link link-hover">Admin</a></p>
         </div>
     </footer>
 
