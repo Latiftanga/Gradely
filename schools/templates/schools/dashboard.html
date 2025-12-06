@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradely - The Future of School Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="bg-base-200">
+
+    <!-- Navbar -->
+    <div class="navbar bg-base-100 shadow-lg fixed top-0 z-50">
+        <div class="container mx-auto">
+            <div class="flex-1">
+                <a class="btn btn-ghost text-2xl font-bold">
+                    <i class="fas fa-graduation-cap text-primary"></i>
+                    Gradely
+                </a>
+            </div>
+            <div class="flex-none">
+                <a href="/admin/" class="btn btn-ghost">Admin Login</a>
+                <a href="#pricing" class="btn btn-primary ml-2">Get Started</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero min-h-screen bg-base-100" style="padding-top: 64px;">
+        <div class="hero-content flex-col lg:flex-row-reverse">
+            <img src="https://placeimg.com/400/400/tech" class="max-w-sm rounded-lg shadow-2xl" />
+            <div>
+                <h1 class="text-5xl font-bold">Revolutionize Your School's Management</h1>
+                <p class="py-6">Gradely provides a seamless, all-in-one platform to manage students, teachers, classes, and grades. Built for schools in Ghana, designed for the future.</p>
+                <a href="#schools" class="btn btn-primary">View Our Schools</a>
+                <a href="#features" class="btn btn-ghost">Learn More</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="container mx-auto py-20 text-center">
+        <h2 class="text-4xl font-bold mb-10">Trusted by Schools Across Ghana</h2>
+        <div class="stats stats-vertical lg:stats-horizontal shadow-xl">
+            <div class="stat">
+                <div class="stat-figure text-primary">
+                    <i class="fas fa-school text-4xl"></i>
+                </div>
+                <div class="stat-title">Total Schools</div>
+                <div class="stat-value">{{ total_schools }}</div>
+                <div class="stat-desc">Joining our platform</div>
+            </div>
+            
+            <div class="stat">
+                <div class="stat-figure text-secondary">
+                    <i class="fas fa-user-check text-4xl"></i>
+                </div>
+                <div class="stat-title">Active Schools</div>
+                <div class="stat-value">{{ active_schools }}</div>
+                <div class="stat-desc">Growing every day</div>
+            </div>
+            
+            <div class="stat">
+                <div class="stat-figure text-accent">
+                    <i class="fas fa-chalkboard-teacher text-4xl"></i>
+                </div>
+                <div class="stat-title">Happy Teachers</div>
+                <div class="stat-value">4,200+</div>
+                <div class="stat-desc">Making an impact</div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Features Section -->
+    <div id="features" class="bg-base-100 py-20">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-2">Why Choose Gradely?</h2>
+            <p class="mb-10 text-lg">Everything you need, all in one place.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card bg-base-200 shadow-lg">
+                    <figure class="px-10 pt-10"><i class="fas fa-users text-5xl text-primary"></i></figure>
+                    <div class="card-body items-center text-center">
+                        <h2 class="card-title">Student Management</h2>
+                        <p>Keep track of student records, attendance, and performance with ease.</p>
+                    </div>
+                </div>
+                <div class="card bg-base-200 shadow-lg">
+                    <figure class="px-10 pt-10"><i class="fas fa-book-open text-5xl text-secondary"></i></figure>
+                    <div class="card-body items-center text-center">
+                        <h2 class="card-title">Gradebook & Reports</h2>
+                        <p>Automate grade calculations and generate insightful academic reports instantly.</p>
+                    </div>
+                </div>
+                <div class="card bg-base-200 shadow-lg">
+                    <figure class="px-10 pt-10"><i class="fas fa-comments text-5xl text-accent"></i></figure>
+                    <div class="card-body items-center text-center">
+                        <h2 class="card-title">Parent Communication</h2>
+                        <p>Bridge the gap between school and home with integrated messaging.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Schools List Section -->
+    <div id="schools" class="py-20">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-10">Our Partner Schools</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for school in schools %}
+                <div class="card bg-base-100 shadow-xl image-full">
+                    <figure><img src="https://placeimg.com/400/225/arch?u={{ school.id }}" alt="{{ school.name }}" /></figure>
+                    <div class="card-body text-white">
+                        <h2 class="card-title">{{ school.name }}</h2>
+                        <p>A leading institution committed to excellence.</p>
+                         <div class="card-actions justify-end">
+                             <a href="#" class="btn btn-primary btn-sm">Visit Portal</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Pricing/CTA Section -->
+    <div id="pricing" class="bg-base-100 py-20">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-2">Ready to Get Started?</h2>
+            <p class="mb-10 text-lg">Choose the plan that's right for your school.</p>
+            <a href="#" class="btn btn-primary btn-lg">Contact Sales</a>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="footer p-10 bg-neutral text-neutral-content">
+        <div>
+            <span class="footer-title">Services</span> 
+            <a class="link link-hover">Student Information</a>
+            <a class="link link-hover">Grade Management</a>
+            <a class="link link-hover">Parent Portal</a>
+            <a class="link link-hover">Analytics</a>
+        </div> 
+        <div>
+            <span class="footer-title">Company</span> 
+            <a class="link link-hover">About us</a>
+            <a class="link link-hover">Contact</a>
+            <a class="link link-hover">Jobs</a>
+        </div> 
+        <div>
+            <span class="footer-title">Legal</span> 
+            <a class="link link-hover">Terms of use</a>
+            <a class="link link-hover">Privacy policy</a>
+            <a class="link link-hover">Cookie policy</a>
+        </div>
+    </footer>
+    <footer class="footer footer-center p-4 bg-base-300 text-base-content">
+        <div>
+            <p>Copyright © 2025 - All right reserved by Gradely</p>
+        </div>
+    </footer>
+
+</body>
+</html>
