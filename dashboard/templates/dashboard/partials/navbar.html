@@ -1,0 +1,25 @@
+<div class="navbar bg-base-100 shadow-md sticky top-0 z-10">
+    <div class="flex-1">
+        <a class="btn btn-ghost text-xl">{{ tenant.name }}</a>
+    </div>
+    <div class="flex-none">
+        <!-- Theme Toggle Button -->
+        <label class="swap swap-rotate btn btn-ghost btn-circle">
+            <input type="checkbox" onchange="toggleTheme()" />
+            <i class="swap-on fas fa-moon"></i>
+            <i class="swap-off fas fa-sun"></i>
+        </label>
+        <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+                <div class="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                    <span class="text-lg leading-none">{{ user.email|slice:":2"|upper }}</span>
+                </div>
+            </label>
+            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                <li><a>Profile</a></li>
+                <li><a>Settings</a></li>
+                <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
