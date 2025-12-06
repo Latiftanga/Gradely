@@ -1,5 +1,6 @@
 from django.db import models
 from django_tenants.models import TenantMixin, DomainMixin
+from django.utils.text import slugify
 
 
 class School(TenantMixin):
@@ -24,6 +25,14 @@ class School(TenantMixin):
     # Auto-create schema when school is saved
     auto_create_schema = True
     auto_drop_schema = False  # Keep data when school is deleted
+
+    def save(self, *args, **kwargs):
+        if not self.pk: # Only on creation
+            # Sanitize short_name to be a valid schema name
+            # PostgreSQL schema names can't start with 'pg_' and must be lowercase
+            # It's safer to use slugify and replace hyphens
+            self.schema_name = slugify(self.short_name).replace('-', '_')
+        super(School, self).save(*args, **kwargs)
     
     class Meta:
         ordering = ['name']

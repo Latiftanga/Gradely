@@ -7,59 +7,56 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.db import connection
-from django.http import HttpResponseForbidden
-from tenants.models import School
+from schools.models import School
 from accounts.models import User
 
 
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.http import HttpResponse
+from django.db import connection
+from schools.models import School
+from accounts.models import User
+from .forms import CustomAuthenticationForm # Import the custom form
+
+
 def login_view(request):
-    """Login view for tenant users"""
+    """Login view for tenant users, compatible with HTMX."""
     
-    # Check if we're on public schema
     if connection.schema_name == 'public':
-        # Redirect to admin login
         return redirect('/admin/login/')
     
-    # Redirect if already authenticated
     if request.user.is_authenticated:
-        return redirect('accounts:dashboard')
-    
-    # Get current school info
-    try:
-        school = School.objects.get(schema_name=connection.schema_name)
-    except School.DoesNotExist:
-        school = None
-    
+        return redirect(reverse('dashboard:main'))
+
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        remember_me = request.POST.get('remember_me')
-        
-        # Authenticate user
-        user = authenticate(request, username=email, password=password)
-        
-        if user is not None:
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
             
-            # Set session expiry
-            if not remember_me:
-                request.session.set_expiry(0)  # Browser close
-            else:
-                request.session.set_expiry(1209600)  # 2 weeks
+            # For HTMX requests, send a redirect header
+            if request.htmx:
+                next_url = request.POST.get('next', reverse('dashboard:main'))
+                response = HttpResponse()
+                response['HX-Redirect'] = next_url
+                return response
             
-            messages.success(request, f'Welcome back, {user.email}!')
-            
-            # Redirect to next or dashboard
-            next_url = request.GET.get('next', 'accounts:dashboard')
-            return redirect(next_url)
+            # For standard requests, do a normal redirect
+            return redirect(reverse('dashboard:main'))
         else:
-            messages.error(request, 'Invalid email or password.')
-    
-    context = {
-        'school': school,
-    }
-    
-    return render(request, 'accounts/login.html', context)
+            # Form is invalid, re-render the form with errors
+            # HTMX will swap this into the page
+            return render(request, 'accounts/login.html', {'form': form})
+
+    # For GET requests
+    form = CustomAuthenticationForm()
+    return render(request, 'accounts/login.html', {'form': form})
+
+
 
 
 @login_required(login_url='accounts:login')

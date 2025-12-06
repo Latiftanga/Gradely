@@ -4,6 +4,6 @@ from . import views
 app_name = 'schools'
 
 urlpatterns = [
-    # Authentication
-    path('', views.dashboard, name='dashboard'),
+    # Add other school-specific URLs here
 ]
+

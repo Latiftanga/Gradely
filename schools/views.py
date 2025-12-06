@@ -15,4 +15,4 @@ def school_dashboard(request):
         'inactive_schools': inactive_schools,
         'schools': schools,
     }
-    return render(request, 'schools/dashboard.html', context)
+    return render(request, 'schools/public_landing_page.html', context)

@@ -1,13 +1,19 @@
 from django.urls import path, include
 from django.conf import settings
-from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
-    # path('', include('accounts.urls')),
+    # Redirect tenant root to the dashboard
+    path('', RedirectView.as_view(pattern_name='dashboard:main', permanent=False), name='tenant_root_redirect'),
+
+    # App-specific URLs
+    path('accounts/', include('accounts.urls', namespace='accounts')),
+    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
 ]
 
 if settings.DEBUG:
     # Include django_browser_reload URLs only in DEBUG mode
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [
+        path("__reload__/", include("django_browser_reload.urls")),
+    ]

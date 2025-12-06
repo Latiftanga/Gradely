@@ -1,0 +1,190 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ request.tenant.name }} | Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* HTMX Button Loading Indicator styles */
+        .htmx-indicator { display: none; }
+        .htmx-request-in-flight .htmx-indicator { display: inline-block; }
+        .htmx-request-in-flight .htmx-indicator-text { display: none; }
+
+        /* Collapsible Sidebar Styles */
+        #main-sidebar {
+            transition: width 0.3s ease;
+        }
+        #main-container {
+            transition: margin-left 0.3s ease;
+            margin-left: 16rem; /* Same as sidebar width (w-64) */
+        }
+        #main-sidebar.is-collapsed {
+            width: 5rem; /* 80px */
+        }
+        #main-container.is-collapsed {
+            margin-left: 5rem;
+        }
+        #main-sidebar.is-collapsed .sidebar-text,
+        #main-sidebar.is-collapsed .menu-title {
+            display: none;
+        }
+        #main-sidebar.is-collapsed .sidebar-logo-text {
+            display: none;
+        }
+        #main-sidebar .menu > li > a {
+            justify-content: start;
+        }
+        #main-sidebar.is-collapsed .menu > li > a {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        #main-sidebar.is-collapsed #sidebar-toggle-button .toggle-arrow {
+            transform: rotate(180deg);
+        }
+        /* Hide tooltips when sidebar is expanded */
+        #main-sidebar:not(.is-collapsed) .tooltip::before,
+        #main-sidebar:not(.is-collapsed) .tooltip::after {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-base-200">
+    <div class="flex h-screen">
+        <!-- Collapsible Sidebar -->
+        <aside id="main-sidebar" class="w-64 bg-base-100 text-base-content flex flex-col fixed top-0 left-0 h-full z-20">
+            <ul class="menu p-4 flex-1">
+                <li class="p-4">
+                    <a href="{% url 'dashboard:main' %}" class="text-2xl font-bold flex items-center gap-2">
+                        {% if request.tenant.logo %}
+                            <img src="{{ request.tenant.logo.url }}" alt="{{ request.tenant.short_name }} Logo" class="h-8 w-8 rounded-full">
+                        {% else %}
+                            <i class="fas fa-graduation-cap text-primary"></i> 
+                        {% endif %}
+                        <span class="sidebar-logo-text">{{ request.tenant.short_name }}</span>
+                    </a>
+                </li>
+                <li class="menu-title"><span class="sidebar-text">Management</span></li>
+                <li><a data-tip="Dashboard" hx-get="{% url 'dashboard:main_partial' %}" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-tachometer-alt fa-fw"></i><span class="sidebar-text">Dashboard</span></a></li>
+                <li><a data-tip="Students" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-users fa-fw"></i><span class="sidebar-text">Students</span></a></li>
+                <li><a data-tip="Teachers" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-chalkboard-teacher fa-fw"></i><span class="sidebar-text">Teachers</span></a></li>
+                <li><a data-tip="Classes" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-school fa-fw"></i><span class="sidebar-text">Classes</span></a></li>
+                <li><a data-tip="Subjects" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-book fa-fw"></i><span class="sidebar-text">Subjects</span></a></li>
+                <li><a data-tip="Grades" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-clipboard-list fa-fw"></i><span class="sidebar-text">Grades</span></a></li>
+                
+                <li class="menu-title"><span class="sidebar-text">Communication</span></li>
+                <li><a data-tip="Announcements" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-bullhorn fa-fw"></i><span class="sidebar-text">Announcements</span></a></li>
+                <li><a data-tip="Events" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-calendar-alt fa-fw"></i><span class="sidebar-text">Events</span></a></li>
+            </ul>
+            <!-- Sidebar Toggle Button -->
+            <div class="p-4 border-t border-base-300">
+                <button id="sidebar-toggle-button" class="btn btn-ghost w-full justify-start">
+                    <i class="fas fa-chevron-left toggle-arrow transition-transform"></i>
+                    <span class="sidebar-text">Collapse</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div id="main-container" class="flex-1 flex flex-col">
+            <!-- Navbar -->
+            <div class="navbar bg-base-100 shadow-md sticky top-0 z-10">
+                <div class="flex-1">
+                    <a class="btn btn-ghost text-xl">{{ request.tenant.name }}</a>
+                </div>
+                <div class="flex-none">
+                    <!-- Theme Toggle Button -->
+                    <label class="swap swap-rotate btn btn-ghost btn-circle">
+                        <input type="checkbox" onchange="toggleTheme()" />
+                        <i class="swap-on fas fa-moon"></i>
+                        <i class="swap-off fas fa-sun"></i>
+                    </label>
+                    <div class="dropdown dropdown-end">
+                        <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+                            <div class="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                                <span>{{ request.user.email|slice:":2"|upper }}</span>
+                            </div>
+                        </label>
+                        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                            <li><a>Profile</a></li>
+                            <li><a>Settings</a></li>
+                            <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <main id="main-content" class="flex-1 p-4 lg:p-8" hx-get="{% url 'schools:dashboard_main' %}" hx-trigger="load" hx-swap="innerHTML">
+                <div class="flex justify-center items-center h-full">
+                    <span class="loading loading-spinner loading-lg"></span>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Theme Management
+        (function() {
+            const theme = localStorage.getItem('theme');
+            const checkbox = document.querySelector('input[type="checkbox"][onchange="toggleTheme()"]');
+            if (theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                if (theme === 'dark' && checkbox) checkbox.checked = true;
+            } else {
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (prefersDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    if (checkbox) checkbox.checked = true;
+                }
+            }
+        })();
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Collapsible Sidebar
+        (function() {
+            const sidebar = document.getElementById('main-sidebar');
+            const container = document.getElementById('main-container');
+            const toggleButton = document.getElementById('sidebar-toggle-button');
+            const sidebarState = localStorage.getItem('sidebarState');
+
+            const collapseSidebar = () => {
+                sidebar.classList.add('is-collapsed');
+                container.classList.add('is-collapsed');
+                localStorage.setItem('sidebarState', 'collapsed');
+            };
+
+            const expandSidebar = () => {
+                sidebar.classList.remove('is-collapsed');
+                container.classList.remove('is-collapsed');
+                localStorage.setItem('sidebarState', 'expanded');
+            };
+
+            // Set initial state from localStorage
+            if (sidebarState === 'collapsed') {
+                collapseSidebar();
+            }
+
+            // Toggle on button click
+            toggleButton.addEventListener('click', () => {
+                if (sidebar.classList.contains('is-collapsed')) {
+                    expandSidebar();
+                } else {
+                    collapseSidebar();
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

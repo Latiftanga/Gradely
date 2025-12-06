@@ -18,7 +18,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-%6j!)0ql!mfe1*^oox6unn1ze#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.localhost,127.0.0.1,localhost').split(',')
 
 
 # Application definition
@@ -46,6 +46,7 @@ TENANT_APPS = [
     
     # Your tenant-specific apps
     'accounts',
+    'dashboard',
 ]
 
 INSTALLED_APPS = SHARED_APPS + [
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',  # Add HTMX middleware
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',

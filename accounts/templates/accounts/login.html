@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | {{ request.tenant.name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* HTMX Button Loading Indicator styles */
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request-in-flight .htmx-indicator {
+            display: inline-block;
+        }
+        .htmx-request-in-flight .htmx-indicator-text {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-base-200">
+    <script>
+        // Theme management script
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+            } else {
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            }
+        })();
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+    </script>
+
+    <!-- Theme Toggle Button -->
+    <div class="absolute top-4 right-4 z-50">
+        <label class="swap swap-rotate btn btn-ghost btn-circle">
+            <input type="checkbox" onchange="toggleTheme()" />
+            <i class="swap-on fas fa-moon text-2xl"></i>
+            <i class="swap-off fas fa-sun text-2xl"></i>
+        </label>
+    </div>
+
+    <div class="flex flex-col lg:flex-row min-h-screen">
+        
+        <!-- Left Side: Branding -->
+        <div class="lg:w-1/2 bg-gradient-to-br from-primary to-secondary text-primary-content flex-col justify-center items-center p-10 lg:p-20 text-center hidden lg:flex">
+            <h1 class="text-6xl font-bold mb-4">
+                <i class="fas fa-graduation-cap"></i> Gradely
+            </h1>
+            <p class="text-xl max-w-md">The all-in-one platform for modern school management in Ghana.</p>
+        </div>
+
+        <!-- Right Side: Login Form -->
+        <div class="lg:w-1/2 flex flex-col justify-center items-center p-10 bg-base-100">
+            <div class="card w-full max-w-md">
+                <form id="login-form" class="card-body" method="post" 
+                      hx-post="{% url 'accounts:login' %}" 
+                      hx-target="#login-form" 
+                      hx-swap="outerHTML">
+                    <h2 class="card-title text-3xl mb-4">Welcome to {{ request.tenant.name }}</h2>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div role="alert" class="alert alert-error">
+                            <i class="fas fa-times-circle"></i>
+                            <span>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </span>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-control">
+                        <label class="label" for="{{ form.username.id_for_label }}">
+                            <span class="label-text">Email Address</span>
+                        </label>
+                        {{ form.username }}
+                         {% if form.username.errors %}
+                            <div class="label">
+                                <span class="label-text-alt text-error">{{ form.username.errors|first }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="form-control">
+                        <label class="label" for="{{ form.password.id_for_label }}">
+                            <span class="label-text">Password</span>
+                        </label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="label">
+                                <span class="label-text-alt text-error">{{ form.password.errors|first }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                     <div class="flex justify-between items-center mt-2">
+                        <label class="label cursor-pointer">
+                            <input type="checkbox" class="checkbox checkbox-primary checkbox-sm mr-2" />
+                            <span class="label-text">Remember me</span> 
+                        </label>
+                        <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
+                    </div>
+                    <div class="form-control mt-6">
+                        <button class="btn btn-primary" type="submit">
+                            <span class="htmx-indicator-text"><i class="fas fa-sign-in-alt"></i> Login</span>
+                            <span class="htmx-indicator loading loading-spinner"></span>
+                        </button>
+                    </div>
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
