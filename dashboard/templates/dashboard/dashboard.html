@@ -1,4 +1,5 @@
 {% load static %}
+{% load dashboard_tags %}
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -69,17 +70,7 @@
                         <span class="sidebar-logo-text">{{ request.tenant.short_name }}</span>
                     </a>
                 </li>
-                <li class="menu-title"><span class="sidebar-text">Management</span></li>
-                <li><a data-tip="Dashboard" hx-get="{% url 'dashboard:main_partial' %}" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-tachometer-alt fa-fw"></i><span class="sidebar-text">Dashboard</span></a></li>
-                <li><a data-tip="Students" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-users fa-fw"></i><span class="sidebar-text">Students</span></a></li>
-                <li><a data-tip="Teachers" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-chalkboard-teacher fa-fw"></i><span class="sidebar-text">Teachers</span></a></li>
-                <li><a data-tip="Classes" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-school fa-fw"></i><span class="sidebar-text">Classes</span></a></li>
-                <li><a data-tip="Subjects" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-book fa-fw"></i><span class="sidebar-text">Subjects</span></a></li>
-                <li><a data-tip="Grades" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-clipboard-list fa-fw"></i><span class="sidebar-text">Grades</span></a></li>
-                
-                <li class="menu-title"><span class="sidebar-text">Communication</span></li>
-                <li><a data-tip="Announcements" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-bullhorn fa-fw"></i><span class="sidebar-text">Announcements</span></a></li>
-                <li><a data-tip="Events" hx-get="#" hx-target="#main-content" class="tooltip tooltip-right flex items-center gap-3"><i class="fas fa-calendar-alt fa-fw"></i><span class="sidebar-text">Events</span></a></li>
+                {% user_sidebar_menu %}
             </ul>
             <!-- Sidebar Toggle Button -->
             <div class="p-4 border-t border-base-300">
@@ -92,35 +83,16 @@
 
         <!-- Main Content Area -->
         <div id="main-container" class="flex-1 flex flex-col">
-            <!-- Navbar -->
-            <div class="navbar bg-base-100 shadow-md sticky top-0 z-10">
-                <div class="flex-1">
-                    <a class="btn btn-ghost text-xl">{{ request.tenant.name }}</a>
-                </div>
-                <div class="flex-none">
-                    <!-- Theme Toggle Button -->
-                    <label class="swap swap-rotate btn btn-ghost btn-circle">
-                        <input type="checkbox" onchange="toggleTheme()" />
-                        <i class="swap-on fas fa-moon"></i>
-                        <i class="swap-off fas fa-sun"></i>
-                    </label>
-                    <div class="dropdown dropdown-end">
-                        <label tabindex="0" class="btn btn-ghost btn-circle avatar">
-                            <div class="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                                <span>{{ request.user.email|slice:":2"|upper }}</span>
-                            </div>
-                        </label>
-                        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                            <li><a>Profile</a></li>
-                            <li><a>Settings</a></li>
-                            <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            {% user_navbar %}
 
             <!-- Page Content -->
-            <main id="main-content" class="flex-1 p-4 lg:p-8" hx-get="{% url 'schools:dashboard_main' %}" hx-trigger="load" hx-swap="innerHTML">
+            <main id="main-content" class="flex-1 p-4 lg:p-8"
+                  {% if initial_main_content_url %}
+                      hx-get="{{ initial_main_content_url }}" hx-trigger="load once" hx-swap="innerHTML"
+                  {% else %}
+                      hx-get="{% url 'dashboard:main_partial' %}" hx-trigger="load" hx-swap="innerHTML"
+                  {% endif %}
+            >
                 <div class="flex justify-center items-center h-full">
                     <span class="loading loading-spinner loading-lg"></span>
                 </div>

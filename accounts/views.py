@@ -46,7 +46,8 @@ def login_view(request):
                 return response
             
             # For standard requests, do a normal redirect
-            return redirect(reverse('dashboard:main'))
+            next_url = request.POST.get('next') or request.GET.get('next', reverse('dashboard:main'))
+            return redirect(next_url)
         else:
             # Form is invalid, re-render the form with errors
             # HTMX will swap this into the page

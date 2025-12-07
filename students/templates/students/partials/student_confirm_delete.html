@@ -1,0 +1,47 @@
+<!-- Delete confirmation modal content -->
+<dialog id="delete-modal" class="modal modal-open">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle text-error"></i>
+            Delete Student
+        </h3>
+        <div class="py-4">
+            <p class="mb-2">Are you sure you want to delete:</p>
+            <div class="bg-base-200 rounded-lg p-4 flex items-center gap-4">
+                <div class="avatar placeholder">
+                    <div class="bg-error text-error-content rounded-full w-12 h-12">
+                        <span class="text-lg">{{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="font-bold">{{ student.get_full_name }}</p>
+                    <p class="text-sm text-base-content/60">ID: {{ student.student_id }}</p>
+                </div>
+            </div>
+            <div class="alert alert-warning mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <span>This action cannot be undone. The student's user account will also be deleted.</span>
+            </div>
+        </div>
+        <div class="modal-action">
+            <form method="dialog">
+                <button class="btn btn-ghost" onclick="document.getElementById('delete-modal').remove()">Cancel</button>
+            </form>
+            <form method="post"
+                  action="{% url 'students:delete' student.pk %}"
+                  hx-post="{% url 'students:delete' student.pk %}"
+                  hx-target="#main-content"
+                  hx-swap="innerHTML"
+                  hx-push-url="{% url 'students:list' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error">
+                    <span class="htmx-indicator loading loading-spinner loading-sm"></span>
+                    <span class="htmx-indicator-text"><i class="fas fa-trash mr-1"></i> Delete</span>
+                </button>
+            </form>
+        </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button onclick="document.getElementById('delete-modal').remove()">close</button>
+    </form>
+</dialog>

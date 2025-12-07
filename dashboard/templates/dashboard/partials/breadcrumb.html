@@ -1,0 +1,23 @@
+{% if breadcrumbs %}
+<div class="text-sm breadcrumbs mb-4">
+    <ul>
+        {% for crumb in breadcrumbs %}
+            {% if not forloop.last %}
+                <li>
+                    <a hx-get="{{ crumb.url }}"
+                       hx-target="#main-content"
+                       hx-push-url="true"
+                       class="link link-hover">
+                        {% if forloop.first %}
+                            <i class="fas fa-home mr-1"></i>
+                        {% endif %}
+                        {{ crumb.name }}
+                    </a>
+                </li>
+            {% else %}
+                <li class="text-base-content/70">{{ crumb.name }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

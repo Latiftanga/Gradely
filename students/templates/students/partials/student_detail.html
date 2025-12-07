@@ -1,0 +1,385 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header with actions -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div class="flex items-center gap-3">
+        <div class="avatar placeholder">
+            <div class="bg-primary text-primary-content rounded-full w-12 h-12">
+                <span class="text-lg">{{ student.first_name|slice:":1" }}{{ student.last_name|slice:":1" }}</span>
+            </div>
+        </div>
+        <div>
+            <h1 class="text-xl font-bold">{{ student.get_full_name }}</h1>
+            <p class="text-base-content/60 text-sm">
+                <span class="font-mono">{{ student.student_id }}</span>
+                {% if student.is_active %}
+                    <span class="badge badge-success badge-xs ml-2">Active</span>
+                {% else %}
+                    <span class="badge badge-error badge-xs ml-2">Inactive</span>
+                {% endif %}
+                {% if student.is_boarder %}
+                    <span class="badge badge-info badge-xs ml-1">Boarder</span>
+                {% else %}
+                    <span class="badge badge-outline badge-xs ml-1">Day</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="flex gap-1">
+        <button class="btn btn-primary btn-xs"
+                hx-get="{% url 'students:update' student.pk %}"
+                hx-target="#main-content"
+                hx-push-url="true">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-error btn-xs"
+                hx-get="{% url 'students:delete' student.pk %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+        <button class="btn btn-ghost btn-xs"
+                hx-get="{% url 'students:list' %}"
+                hx-target="#main-content"
+                hx-push-url="true">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-4 gap-4">
+    <!-- Main Content -->
+    <div class="xl:col-span-3 space-y-4">
+        <!-- Personal & Account Info Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Personal Information -->
+            <div class="card bg-base-100 shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                        <i class="fas fa-user text-primary text-xs"></i>
+                        Personal Information
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Full Name</p>
+                            <p class="text-sm font-medium">{{ student.get_full_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Gender</p>
+                            <p>
+                                {% if student.gender == 'M' %}
+                                    <span class="badge badge-info badge-xs gap-1"><i class="fas fa-mars text-[10px]"></i> Male</span>
+                                {% else %}
+                                    <span class="badge badge-secondary badge-xs gap-1"><i class="fas fa-venus text-[10px]"></i> Female</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Date of Birth</p>
+                            <p class="text-sm font-medium">{{ student.date_of_birth|date:"M d, Y" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Age</p>
+                            <p class="text-sm font-medium">{{ student.age }} years</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-base-content/60 uppercase">Email</p>
+                            <p class="text-sm"><a href="mailto:{{ student.user.email }}" class="link link-primary">{{ student.user.email }}</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identification -->
+            <div class="card bg-base-100 shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                        <i class="fas fa-id-card text-primary text-xs"></i>
+                        Identification
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Student ID</p>
+                            <p class="font-mono text-sm font-medium">{{ student.student_id }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Admission No.</p>
+                            <p class="font-mono text-sm">{{ student.admission_number|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Index Number</p>
+                            <p class="font-mono text-sm">{{ student.index_number|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Ghana Card</p>
+                            <p class="font-mono text-sm">{{ student.ghana_card_number|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic & Location Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Academic Information -->
+            <div class="card bg-base-100 shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                        <i class="fas fa-graduation-cap text-primary text-xs"></i>
+                        Academic Information
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-base-content/60 uppercase">Current Class</p>
+                            <p class="text-sm font-medium">
+                                {% if student.current_class %}
+                                    {{ student.current_class }}
+                                {% else %}
+                                    <span class="text-base-content/40">Not assigned</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Admission Date</p>
+                            <p class="text-sm">{{ student.admission_date|date:"M d, Y"|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Date Enrolled</p>
+                            <p class="text-sm">{{ student.date_enrolled|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-base-content/60 uppercase">Previous School</p>
+                            <p class="text-sm">{{ student.previous_school|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="card bg-base-100 shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                        <i class="fas fa-map-marker-alt text-primary text-xs"></i>
+                        Location
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Hometown</p>
+                            <p class="text-sm">{{ student.hometown|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Region</p>
+                            <p class="text-sm">{{ student.region|default:"-" }}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-base-content/60 uppercase">Nationality</p>
+                            <p class="text-sm">{{ student.nationality }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Residential & Health Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Residential -->
+            <div class="card bg-base-100 shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                        <i class="fas fa-home text-primary text-xs"></i>
+                        Residential
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Status</p>
+                            <p>
+                                {% if student.is_boarder %}
+                                    <span class="badge badge-info badge-xs">Boarder</span>
+                                {% else %}
+                                    <span class="badge badge-outline badge-xs">Day Student</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">House</p>
+                            <p class="text-sm">{{ student.house|default:"-" }}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-base-content/60 uppercase">Address</p>
+                            <p class="text-sm">{{ student.residential_address|default:"-"|linebreaksbr }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Information -->
+            <div class="card bg-base-100 shadow">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                        <i class="fas fa-heartbeat text-primary text-xs"></i>
+                        Health Information
+                    </h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Blood Group</p>
+                            <p class="text-sm font-medium">{{ student.blood_group|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-base-content/60 uppercase">Allergies</p>
+                            <p class="text-sm">{{ student.allergies|default:"None" }}</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-base-content/60 uppercase">Medical Conditions</p>
+                            <p class="text-sm">{{ student.medical_conditions|default:"None" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parents/Guardians -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-users text-primary text-xs"></i>
+                    Parents/Guardians
+                </h2>
+                {% if student.parents.exists %}
+                <div class="overflow-x-auto">
+                    <table class="table table-xs">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Relationship</th>
+                                <th>Phone</th>
+                                <th>Primary</th>
+                                <th>Emergency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for parent in student.parents.all %}
+                            <tr>
+                                <td class="font-medium">{{ parent.get_full_name }}</td>
+                                <td>{{ parent.get_relationship_display }}</td>
+                                <td class="font-mono text-xs">{{ parent.phone_number }}</td>
+                                <td>
+                                    {% if parent.is_primary_contact %}
+                                        <span class="badge badge-success badge-xs">Yes</span>
+                                    {% else %}
+                                        <span class="text-base-content/40">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if parent.is_emergency_contact %}
+                                        <span class="badge badge-warning badge-xs">Yes</span>
+                                    {% else %}
+                                        <span class="text-base-content/40">-</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-sm text-base-content/50 text-center py-4">No parents/guardians linked</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Status Card -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-toggle-on text-primary text-xs"></i>
+                    Status
+                </h2>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-base-content/60">Enrollment</span>
+                        {% if student.is_active %}
+                            <span class="badge badge-success badge-xs">Active</span>
+                        {% else %}
+                            <span class="badge badge-error badge-xs">Inactive</span>
+                        {% endif %}
+                    </div>
+                    {% if not student.is_active and student.withdrawal_date %}
+                    <div>
+                        <p class="text-[10px] text-base-content/60 uppercase">Withdrawn</p>
+                        <p class="text-sm">{{ student.withdrawal_date|date:"M d, Y" }}</p>
+                    </div>
+                    {% if student.withdrawal_reason %}
+                    <div>
+                        <p class="text-[10px] text-base-content/60 uppercase">Reason</p>
+                        <p class="text-xs">{{ student.withdrawal_reason }}</p>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-bolt text-primary text-xs"></i>
+                    Quick Actions
+                </h2>
+                <div class="space-y-1">
+                    <button class="btn btn-outline btn-block btn-xs justify-start" disabled>
+                        <i class="fas fa-book w-4"></i> View Grades
+                    </button>
+                    <button class="btn btn-outline btn-block btn-xs justify-start" disabled>
+                        <i class="fas fa-calendar w-4"></i> Attendance
+                    </button>
+                    <button class="btn btn-outline btn-block btn-xs justify-start" disabled>
+                        <i class="fas fa-file-alt w-4"></i> Reports
+                    </button>
+                    <button class="btn btn-outline btn-block btn-xs justify-start" disabled>
+                        <i class="fas fa-user-friends w-4"></i> Add Parent
+                    </button>
+                </div>
+                <p class="text-[10px] text-base-content/40 mt-2">Coming soon</p>
+            </div>
+        </div>
+
+        <!-- Timeline/Audit -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-clock text-primary text-xs"></i>
+                    Timeline
+                </h2>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-success"></div>
+                        <div>
+                            <p class="font-medium">Enrolled</p>
+                            <p class="text-base-content/60">{{ student.date_enrolled|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    {% if student.admission_date %}
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-info"></div>
+                        <div>
+                            <p class="font-medium">Admitted</p>
+                            <p class="text-base-content/60">{{ student.admission_date|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-base-300"></div>
+                        <div>
+                            <p class="font-medium">Last Updated</p>
+                            <p class="text-base-content/60">{{ student.updated_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

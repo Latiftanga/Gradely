@@ -1,0 +1,145 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Students</h1>
+        <p class="text-base-content/60 text-sm">Manage student records and enrollments</p>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-outline btn-sm"
+                hx-get="{% url 'students:bulk_import' %}"
+                hx-target="#main-content"
+                hx-push-url="true">
+            <i class="fas fa-file-import"></i> Bulk Import
+        </button>
+        <button class="btn btn-primary btn-sm"
+                hx-get="{% url 'students:add' %}"
+                hx-target="#main-content"
+                hx-push-url="true">
+            <i class="fas fa-user-plus"></i> Add Student
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats stats-horizontal shadow mb-4 w-full text-sm">
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-primary">
+            <i class="fas fa-users text-xl"></i>
+        </div>
+        <div class="stat-title text-xs">Total</div>
+        <div class="stat-value text-primary text-xl">{{ total_count|default:students.count }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-success">
+            <i class="fas fa-user-check text-xl"></i>
+        </div>
+        <div class="stat-title text-xs">Active</div>
+        <div class="stat-value text-success text-xl">{{ active_count|default:"-" }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-info">
+            <i class="fas fa-home text-xl"></i>
+        </div>
+        <div class="stat-title text-xs">Boarders</div>
+        <div class="stat-value text-info text-xl">{{ boarder_count|default:"-" }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-secondary">
+            <i class="fas fa-sun text-xl"></i>
+        </div>
+        <div class="stat-title text-xs">Day</div>
+        <div class="stat-value text-secondary text-xl">{{ day_count|default:"-" }}</div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card bg-base-100 shadow mb-4">
+    <div class="card-body p-3">
+        <div class="flex flex-col lg:flex-row gap-2">
+            <!-- Search Bar -->
+            <label class="input input-bordered input-sm flex items-center gap-2 flex-1">
+                <i class="fas fa-search text-base-content/40 text-xs"></i>
+                <input type="text"
+                       class="grow text-sm"
+                       name="q"
+                       placeholder="Search by name or student ID..."
+                       value="{{ search_query }}"
+                       hx-get="{% url 'students:list' %}"
+                       hx-trigger="keyup changed delay:300ms"
+                       hx-target="#student-table-body"
+                       hx-swap="innerHTML"
+                       hx-indicator="#search-indicator">
+                <span id="search-indicator" class="htmx-indicator loading loading-spinner loading-xs"></span>
+            </label>
+
+            <!-- Filter Dropdowns -->
+            <div class="flex flex-wrap gap-2">
+                <select class="select select-bordered select-xs"
+                        name="class_filter"
+                        hx-get="{% url 'students:list' %}"
+                        hx-trigger="change"
+                        hx-target="#student-table-body"
+                        hx-swap="innerHTML">
+                    <option value="">All Classes</option>
+                    {% for cls in classes %}
+                        <option value="{{ cls.pk }}" {% if class_filter == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
+                    {% endfor %}
+                </select>
+                <select class="select select-bordered select-xs"
+                        name="residential_filter"
+                        hx-get="{% url 'students:list' %}"
+                        hx-trigger="change"
+                        hx-target="#student-table-body"
+                        hx-swap="innerHTML">
+                    <option value="" {% if not residential_filter %}selected{% endif %}>All Types</option>
+                    <option value="day" {% if residential_filter == 'day' %}selected{% endif %}>Day Students</option>
+                    <option value="boarder" {% if residential_filter == 'boarder' %}selected{% endif %}>Boarders</option>
+                </select>
+                <select class="select select-bordered select-xs"
+                        name="status_filter"
+                        hx-get="{% url 'students:list' %}"
+                        hx-trigger="change"
+                        hx-target="#student-table-body"
+                        hx-swap="innerHTML">
+                    <option value="" {% if not status_filter %}selected{% endif %}>All Status</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+                <select class="select select-bordered select-xs"
+                        name="gender_filter"
+                        hx-get="{% url 'students:list' %}"
+                        hx-trigger="change"
+                        hx-target="#student-table-body"
+                        hx-swap="innerHTML">
+                    <option value="" {% if not gender_filter %}selected{% endif %}>All Genders</option>
+                    <option value="M" {% if gender_filter == 'M' %}selected{% endif %}>Male</option>
+                    <option value="F" {% if gender_filter == 'F' %}selected{% endif %}>Female</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Table -->
+<div class="card bg-base-100 shadow overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="table table-zebra table-sm">
+            <thead class="bg-base-200 text-xs">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student</th>
+                    <th>Gender</th>
+                    <th>Class</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="student-table-body">
+                {% include 'students/partials/student_table.html' %}
+            </tbody>
+        </table>
+    </div>
+</div>

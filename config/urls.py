@@ -10,6 +10,7 @@ urlpatterns = [
     # App-specific URLs
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('students/', include('students.urls', namespace='students')),
 ]
 
 if settings.DEBUG:

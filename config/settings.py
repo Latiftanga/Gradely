@@ -43,10 +43,13 @@ TENANT_APPS = [
     # Django apps that should be in each tenant schema
     'django.contrib.contenttypes',
     'django.contrib.auth',
-    
+
     # Your tenant-specific apps
     'accounts',
     'dashboard',
+    'academics',
+    'teachers',
+    'students',
 ]
 
 INSTALLED_APPS = SHARED_APPS + [

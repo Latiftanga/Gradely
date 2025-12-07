@@ -1,0 +1,15 @@
+{% for section in user_menu %}
+<li class="menu-title"><span class="sidebar-text">{{ section.title }}</span></li>
+    {% for item in section.items %}
+    <li>
+        <a data-tip="{{ item.label }}" 
+           hx-get="{% if item.url_name != '#' %}{% url item.url_name %}{% else %}#{% endif %}" 
+           hx-target="#main-content" 
+           {% if item.url_name != '#' %}hx-push-url="true"{% endif %}
+           class="tooltip tooltip-right flex items-center gap-3">
+            <i class="fas {{ item.icon }} fa-fw"></i>
+            <span class="sidebar-text">{{ item.label }}</span>
+        </a>
+    </li>
+    {% endfor %}
+{% endfor %}
