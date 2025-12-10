@@ -1,0 +1,53 @@
+<!-- Remove Subject Confirmation Modal -->
+<div class="modal modal-open" id="remove-modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg flex items-center gap-2 text-warning">
+            <i class="fas fa-unlink"></i>
+            Remove Subject?
+        </h3>
+
+        <div class="py-4">
+            <p class="text-sm">Are you sure you want to remove this subject from the class?</p>
+
+            <div class="flex items-center gap-3 mt-4 p-3 bg-base-200 rounded-lg">
+                <div class="avatar placeholder">
+                    <div class="bg-primary text-primary-content rounded-full w-12 h-12">
+                        <i class="fas fa-book"></i>
+                    </div>
+                </div>
+                <div>
+                    <p class="font-medium">{{ class_subject.subject.name }}</p>
+                    <p class="text-xs text-base-content/60">
+                        {% if class_subject.teacher %}
+                            Taught by {{ class_subject.teacher.get_full_name }}
+                        {% else %}
+                            No teacher assigned
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4 text-xs">
+                <i class="fas fa-info-circle"></i>
+                <span>This will only remove the subject from this class. The subject itself will not be deleted.</span>
+            </div>
+        </div>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('remove-modal').remove()">
+                Cancel
+            </button>
+            <form method="post"
+                  hx-post="{% url 'academics:class_subject_remove' class.pk class_subject.pk %}"
+                  hx-target="#class-subjects-section"
+                  hx-swap="innerHTML">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning btn-sm">
+                    <i class="fas fa-unlink"></i> Remove
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('remove-modal').remove()"></div>
+</div>

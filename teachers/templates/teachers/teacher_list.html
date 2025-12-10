@@ -1,0 +1,138 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Teachers</h1>
+        <p class="text-base-content/60 text-sm">Manage teacher records and assignments</p>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-outline btn-sm"
+                hx-get="{% url 'teachers:bulk_import' %}"
+                hx-target="#main-content"
+                hx-swap="innerHTML"
+                hx-push-url="true">
+            <i class="fas fa-file-import"></i> Bulk Import
+        </button>
+        <button class="btn btn-primary btn-sm"
+                hx-get="{% url 'teachers:add' %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-user-plus"></i> Add Teacher
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats stats-horizontal shadow mb-4 w-full">
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-primary">
+            <i class="fas fa-chalkboard-teacher text-2xl"></i>
+        </div>
+        <div class="stat-title">Total</div>
+        <div class="stat-value text-primary text-2xl">{{ total_count }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-success">
+            <i class="fas fa-user-check text-2xl"></i>
+        </div>
+        <div class="stat-title">Active</div>
+        <div class="stat-value text-success text-2xl">{{ active_count }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-info">
+            <i class="fas fa-briefcase text-2xl"></i>
+        </div>
+        <div class="stat-title">Full Time</div>
+        <div class="stat-value text-info text-2xl">{{ full_time_count }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-secondary">
+            <i class="fas fa-clock text-2xl"></i>
+        </div>
+        <div class="stat-title">Part Time</div>
+        <div class="stat-value text-secondary text-2xl">{{ part_time_count }}</div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card bg-base-100 shadow mb-4">
+    <div class="card-body p-3">
+        <div class="flex flex-col lg:flex-row gap-2">
+            <!-- Search Bar -->
+            <label class="input input-bordered input-sm flex items-center gap-2 flex-1">
+                <i class="fas fa-search text-base-content/40"></i>
+                <input type="text"
+                       class="grow"
+                       name="q"
+                       placeholder="Search by name, staff ID, or specialization..."
+                       value="{{ search_query }}"
+                       hx-get="{% url 'teachers:list_partial' %}"
+                       hx-trigger="keyup changed delay:300ms"
+                       hx-target="#teacher-table-container"
+                       hx-swap="outerHTML"
+                       hx-include="#teacher-filters"
+                       hx-indicator="#search-indicator">
+                <span id="search-indicator" class="htmx-indicator loading loading-spinner loading-sm"></span>
+            </label>
+
+            <!-- Filter Dropdowns -->
+            <form id="teacher-filters" class="flex flex-wrap gap-2">
+                <select class="select select-bordered select-sm"
+                        name="employment_status"
+                        hx-get="{% url 'teachers:list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#teacher-table-container"
+                        hx-swap="outerHTML"
+                        hx-include="#teacher-filters">
+                    <option value="">All Employment</option>
+                    {% for value, label in employment_status_choices %}
+                        <option value="{{ value }}" {% if selected_employment_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <select class="select select-bordered select-sm"
+                        name="qualification"
+                        hx-get="{% url 'teachers:list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#teacher-table-container"
+                        hx-swap="outerHTML"
+                        hx-include="#teacher-filters">
+                    <option value="">All Qualifications</option>
+                    {% for value, label in qualification_choices %}
+                        <option value="{{ value }}" {% if selected_qualification == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <select class="select select-bordered select-sm"
+                        name="status"
+                        hx-get="{% url 'teachers:list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#teacher-table-container"
+                        hx-swap="outerHTML"
+                        hx-include="#teacher-filters">
+                    <option value="">All Status</option>
+                    <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Teacher Table -->
+{% include 'teachers/partials/teacher_table.html' %}
+
+<script>
+    document.body.addEventListener('teacherAdded', function() {
+        htmx.ajax('GET', '{% url "teachers:list" %}', {target: '#main-content', swap: 'innerHTML'});
+    });
+    document.body.addEventListener('teacherUpdated', function() {
+        htmx.ajax('GET', '{% url "teachers:list" %}', {target: '#main-content', swap: 'innerHTML'});
+    });
+    document.body.addEventListener('teacherDeleted', function() {
+        htmx.ajax('GET', '{% url "teachers:list" %}', {target: '#main-content', swap: 'innerHTML'});
+    });
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

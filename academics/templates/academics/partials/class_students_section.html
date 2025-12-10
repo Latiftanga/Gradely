@@ -1,0 +1,103 @@
+<!-- Students Section -->
+<div class="card bg-base-100 shadow" id="class-students-section">
+    <div class="card-body p-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <h2 class="card-title text-sm">
+                <i class="fas fa-users text-primary"></i>
+                Students ({{ enrollments|length }})
+                {% if selected_year %}
+                <span class="badge badge-ghost badge-sm">{{ selected_year.name }}</span>
+                {% endif %}
+            </h2>
+            <div class="flex flex-wrap gap-2">
+                <!-- Year Filter -->
+                <select class="select select-bordered select-xs"
+                        hx-get="{% url 'academics:class_detail' class.pk %}"
+                        hx-target="#main-content"
+                        hx-include="this"
+                        name="academic_year">
+                    {% for year in academic_years %}
+                        <option value="{{ year.pk }}" {% if selected_year.pk == year.pk %}selected{% endif %}>
+                            {{ year.name }}{% if year.is_current %} (Current){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+                <!-- Enroll Button -->
+                <button class="btn btn-primary btn-xs"
+                        hx-get="{% url 'academics:class_enrollment_add' class.pk %}{% if selected_year %}?academic_year={{ selected_year.pk }}{% endif %}"
+                        hx-target="body"
+                        hx-swap="beforeend">
+                    <i class="fas fa-user-plus"></i> Enroll
+                </button>
+                <!-- Bulk Enroll Button -->
+                <button class="btn btn-ghost btn-xs"
+                        hx-get="{% url 'academics:bulk_enrollment' class.pk %}{% if selected_year %}?academic_year={{ selected_year.pk }}{% endif %}"
+                        hx-target="body"
+                        hx-swap="beforeend">
+                    <i class="fas fa-users"></i> Bulk Enroll
+                </button>
+            </div>
+        </div>
+        {% if enrollments %}
+        <div class="overflow-x-auto mt-2">
+            <table class="table table-zebra table-xs">
+                <thead class="bg-base-200">
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Type</th>
+                        <th>Enrolled</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                    <tr class="hover">
+                        <td>{{ enrollment.student.student_id }}</td>
+                        <td>
+                            <a href="{% url 'students:detail' enrollment.student.pk %}"
+                               hx-get="{% url 'students:detail' enrollment.student.pk %}"
+                               hx-target="#main-content"
+                               hx-push-url="true"
+                               class="text-primary hover:underline">
+                                {{ enrollment.student.get_full_name }}
+                            </a>
+                        </td>
+                        <td>{{ enrollment.student.get_gender_display }}</td>
+                        <td>
+                            {% if enrollment.student.residential_status == 'boarder' %}
+                                <span class="badge badge-info badge-xs">Boarder</span>
+                            {% else %}
+                                <span class="badge badge-ghost badge-xs">Day</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-xs">{{ enrollment.enrollment_date|date:"M d, Y" }}</td>
+                        <td class="text-center">
+                            <button class="btn btn-ghost btn-xs text-error"
+                                    hx-get="{% url 'academics:class_enrollment_remove' class.pk enrollment.pk %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend"
+                                    title="Remove from class">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-base-content/60">
+            <i class="fas fa-users text-2xl mb-2"></i>
+            <p class="text-sm">No students enrolled in this class{% if selected_year %} for {{ selected_year.name }}{% endif %}</p>
+            <button class="btn btn-primary btn-sm mt-2"
+                    hx-get="{% url 'academics:bulk_enrollment' class.pk %}{% if selected_year %}?academic_year={{ selected_year.pk }}{% endif %}"
+                    hx-target="body"
+                    hx-swap="beforeend">
+                <i class="fas fa-users"></i> Enroll Students
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>

@@ -1,0 +1,92 @@
+<div class="card bg-base-100 shadow" id="grading-scales-section">
+    <div class="card-body p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-semibold">
+                <i class="fas fa-chart-bar text-primary mr-1"></i> Grading Scales
+            </h3>
+            <button class="btn btn-primary btn-sm"
+                    hx-get="{% url 'dashboard:grading_scale_add' %}"
+                    hx-target="body"
+                    hx-swap="beforeend">
+                <i class="fas fa-plus"></i> Add Scale
+            </button>
+        </div>
+
+        <p class="text-xs text-base-content/60 mb-4">
+            Define grading scales for different school levels (WASSCE for SHS, BECE for JHS, etc.)
+        </p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="grading-scale-list">
+            {% for scale in grading_scales %}
+            <div class="card bg-base-200/50 hover:shadow-md transition-shadow">
+                <div class="card-body p-3">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold">{{ scale.name }}</h4>
+                            <span class="badge badge-info badge-xs">{{ scale.get_level_type_display }}</span>
+                            {% if scale.is_default %}
+                            <span class="badge badge-success badge-xs ml-1">Default</span>
+                            {% endif %}
+                        </div>
+                        {% if scale.is_active %}
+                            <span class="badge badge-success badge-xs">Active</span>
+                        {% else %}
+                            <span class="badge badge-ghost badge-xs">Inactive</span>
+                        {% endif %}
+                    </div>
+
+                    {% if scale.description %}
+                    <p class="text-xs text-base-content/60 mt-1">{{ scale.description|truncatewords:15 }}</p>
+                    {% endif %}
+
+                    <!-- Grade Levels Preview -->
+                    <div class="mt-2">
+                        <p class="text-xs text-base-content/60 mb-1">Grades:</p>
+                        <div class="flex flex-wrap gap-1">
+                            {% for level in scale.levels.all|slice:":6" %}
+                            <span class="badge badge-outline badge-xs">
+                                {{ level.grade }} ({{ level.min_score|floatformat:0 }}-{{ level.max_score|floatformat:0 }})
+                            </span>
+                            {% empty %}
+                            <span class="text-xs text-base-content/40">No grades defined</span>
+                            {% endfor %}
+                            {% if scale.levels.count > 6 %}
+                            <span class="badge badge-ghost badge-xs">+{{ scale.levels.count|add:"-6" }} more</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-1 mt-2">
+                        <button class="btn btn-ghost btn-xs"
+                                hx-get="{% url 'dashboard:grading_scale_edit' scale.pk %}"
+                                hx-target="body"
+                                hx-swap="beforeend"
+                                title="Edit">
+                            <i class="fas fa-edit text-warning"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-xs"
+                                hx-get="{% url 'dashboard:grading_scale_delete' scale.pk %}"
+                                hx-target="body"
+                                hx-swap="beforeend"
+                                title="Delete">
+                            <i class="fas fa-trash text-error"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-8 text-base-content/60">
+                <i class="fas fa-chart-bar text-4xl mb-2"></i>
+                <p>No grading scales configured</p>
+                <p class="text-xs mt-1">Add scales like WASSCE (A1-F9) or BECE (1-9)</p>
+                <button class="btn btn-primary btn-sm mt-2"
+                        hx-get="{% url 'dashboard:grading_scale_add' %}"
+                        hx-target="body"
+                        hx-swap="beforeend">
+                    <i class="fas fa-plus"></i> Add First Scale
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

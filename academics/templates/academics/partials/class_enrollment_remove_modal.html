@@ -1,0 +1,47 @@
+<!-- Enrollment Remove Confirmation Modal -->
+<div class="modal modal-open" id="remove-enrollment-modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg flex items-center gap-2 text-error">
+            <i class="fas fa-user-minus"></i>
+            Remove Student from Class?
+        </h3>
+
+        <div class="py-4">
+            <p class="text-sm">Are you sure you want to remove this student from the class?</p>
+
+            <div class="flex items-center gap-3 mt-4 p-3 bg-base-200 rounded-lg">
+                <div class="avatar placeholder">
+                    <div class="bg-primary text-primary-content rounded-full w-12 h-12">
+                        <span class="text-lg">{{ enrollment.student.first_name.0 }}{{ enrollment.student.last_name.0 }}</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="font-medium">{{ enrollment.student.get_full_name }}</p>
+                    <p class="text-xs text-base-content/60">{{ enrollment.student.student_id }} - {{ class }}</p>
+                </div>
+            </div>
+
+            <div class="alert alert-warning mt-4 text-xs">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>This will remove the student's enrollment for {{ enrollment.academic_year.name }}.</span>
+            </div>
+        </div>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('remove-enrollment-modal').remove()">
+                Cancel
+            </button>
+            <form method="post"
+                  hx-post="{% url 'academics:class_enrollment_remove' class.pk enrollment.pk %}"
+                  hx-target="#class-students-section"
+                  hx-swap="outerHTML">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error btn-sm">
+                    <i class="fas fa-user-minus"></i> Remove
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('remove-enrollment-modal').remove()"></div>
+</div>

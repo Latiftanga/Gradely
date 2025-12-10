@@ -1,9 +1,11 @@
+{% load dashboard_tags %}
 {% if breadcrumbs %}
 <div class="text-sm breadcrumbs mb-4">
     <ul>
         {% for crumb in breadcrumbs %}
             {% if not forloop.last %}
                 <li>
+                    {% if crumb.url|is_safe_url %}
                     <a hx-get="{{ crumb.url }}"
                        hx-target="#main-content"
                        hx-push-url="true"
@@ -13,6 +15,14 @@
                         {% endif %}
                         {{ crumb.name }}
                     </a>
+                    {% else %}
+                    <span class="text-base-content/70">
+                        {% if forloop.first %}
+                            <i class="fas fa-home mr-1"></i>
+                        {% endif %}
+                        {{ crumb.name }}
+                    </span>
+                    {% endif %}
                 </li>
             {% else %}
                 <li class="text-base-content/70">{{ crumb.name }}</li>

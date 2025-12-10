@@ -1,0 +1,156 @@
+<!-- Steps Indicator -->
+<ul class="steps steps-horizontal w-full mb-6">
+    <li class="step step-primary">Setup</li>
+    <li class="step step-primary">Select Students</li>
+    <li class="step step-primary">Complete</li>
+</ul>
+
+<!-- Result Card -->
+<div class="card bg-base-100 shadow">
+    <div class="card-body p-6">
+        <div class="flex flex-col items-center text-center">
+            {% if promoted_count > 0 or graduated_count > 0 %}
+            <!-- Success Icon -->
+            <div class="avatar placeholder mb-4">
+                <div class="bg-success text-success-content rounded-full w-20 h-20">
+                    {% if is_graduation %}
+                    <i class="fas fa-graduation-cap text-3xl"></i>
+                    {% else %}
+                    <i class="fas fa-check text-3xl"></i>
+                    {% endif %}
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold text-success">
+                {% if is_graduation %}Graduation Complete!{% else %}Promotion Complete!{% endif %}
+            </h2>
+            {% else %}
+            <!-- Warning Icon -->
+            <div class="avatar placeholder mb-4">
+                <div class="bg-warning text-warning-content rounded-full w-20 h-20">
+                    <i class="fas fa-exclamation text-3xl"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl font-bold text-warning">
+                {% if is_graduation %}No Students Graduated{% else %}No Students Promoted{% endif %}
+            </h2>
+            {% endif %}
+
+            <p class="text-base-content/70 mt-2 max-w-md">
+                {% if is_graduation %}
+                    {% if graduated_count > 0 %}
+                    Successfully graduated <strong>{{ graduated_count }}</strong> student(s)
+                    from <strong>{{ source_class }}</strong> ({{ source_year.name }}).
+                    {% else %}
+                    No students were graduated. They may already be marked as graduated.
+                    {% endif %}
+                {% else %}
+                    {% if promoted_count > 0 %}
+                    Successfully processed <strong>{{ promoted_count }}</strong> student(s)
+                    with action <strong>{{ promotion_type_display }}</strong>
+                    to <strong>{{ target_class }}</strong> ({{ target_year.name }}).
+                    {% else %}
+                    No students were promoted. They may already be enrolled in the target year.
+                    {% endif %}
+                {% endif %}
+            </p>
+
+            <!-- Stats -->
+            <div class="stats stats-horizontal shadow mt-6">
+                <div class="stat py-3 px-6">
+                    <div class="stat-figure text-success">
+                        {% if is_graduation %}
+                        <i class="fas fa-graduation-cap text-xl"></i>
+                        {% else %}
+                        <i class="fas fa-check-circle text-xl"></i>
+                        {% endif %}
+                    </div>
+                    <div class="stat-title text-xs">{% if is_graduation %}Graduated{% else %}Promoted{% endif %}</div>
+                    <div class="stat-value text-xl text-success">{% if is_graduation %}{{ graduated_count }}{% else %}{{ promoted_count }}{% endif %}</div>
+                </div>
+                {% if skipped_count > 0 %}
+                <div class="stat py-3 px-6">
+                    <div class="stat-figure text-warning">
+                        <i class="fas fa-forward text-xl"></i>
+                    </div>
+                    <div class="stat-title text-xs">Skipped</div>
+                    <div class="stat-value text-xl text-warning">{{ skipped_count }}</div>
+                </div>
+                {% endif %}
+                {% if errors %}
+                <div class="stat py-3 px-6">
+                    <div class="stat-figure text-error">
+                        <i class="fas fa-times-circle text-xl"></i>
+                    </div>
+                    <div class="stat-title text-xs">Errors</div>
+                    <div class="stat-value text-xl text-error">{{ errors|length }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if errors %}
+            <!-- Error Details -->
+            <div class="alert alert-error mt-6 text-left max-w-lg">
+                <div>
+                    <h3 class="font-bold text-sm"><i class="fas fa-exclamation-circle mr-2"></i>Errors Occurred</h3>
+                    <ul class="text-xs mt-2 list-disc list-inside">
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="flex gap-3 mt-8">
+                <button class="btn btn-outline btn-sm"
+                        hx-get="{% url 'academics:promotion' %}"
+                        hx-target="#main-content"
+                        hx-swap="innerHTML">
+                    <i class="fas fa-redo"></i> Promote More Students
+                </button>
+                {% if promoted_count > 0 %}
+                <button class="btn btn-primary btn-sm"
+                        hx-get="{% url 'academics:class_detail' target_class.pk %}?academic_year={{ target_year.pk }}"
+                        hx-target="#main-content"
+                        hx-swap="innerHTML"
+                        hx-push-url="true">
+                    <i class="fas fa-eye"></i> View Target Class
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- What Happened -->
+<div class="card bg-base-100 shadow mt-4">
+    <div class="card-body p-4">
+        <h3 class="font-semibold text-sm flex items-center gap-2">
+            <i class="fas fa-info-circle text-primary"></i> What Happened
+        </h3>
+        <ul class="text-sm mt-2 space-y-1 text-base-content/70">
+            {% if is_graduation %}
+                {% if graduated_count > 0 %}
+                <li><i class="fas fa-check text-success mr-2"></i>Student status set to "Graduated"</li>
+                <li><i class="fas fa-check text-success mr-2"></i>Student accounts marked as inactive</li>
+                <li><i class="fas fa-check text-success mr-2"></i>Graduation date and year recorded</li>
+                <li><i class="fas fa-check text-success mr-2"></i>Enrollment history preserved for records</li>
+                {% endif %}
+            {% else %}
+                {% if promoted_count > 0 %}
+                <li><i class="fas fa-check text-success mr-2"></i>New enrollments created in {{ target_class }} for {{ target_year.name }}</li>
+                <li><i class="fas fa-check text-success mr-2"></i>Original enrollments preserved for record keeping</li>
+                <li><i class="fas fa-check text-success mr-2"></i>Promotion history linked for tracking</li>
+                {% endif %}
+            {% endif %}
+            {% if skipped_count > 0 %}
+                {% if is_graduation %}
+                <li><i class="fas fa-forward text-warning mr-2"></i>{{ skipped_count }} student(s) skipped because they were already graduated</li>
+                {% else %}
+                <li><i class="fas fa-forward text-warning mr-2"></i>{{ skipped_count }} student(s) skipped because they were already enrolled</li>
+                {% endif %}
+            {% endif %}
+        </ul>
+    </div>
+</div>

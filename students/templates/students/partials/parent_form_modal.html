@@ -1,0 +1,228 @@
+<!-- Parent Form Modal -->
+<div class="modal modal-open" id="parent-modal">
+    <div class="modal-box max-w-2xl">
+        <form method="post"
+              hx-post="{{ request.path }}"
+              hx-target="#parents-section"
+              hx-swap="innerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-user-plus text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            {% if is_link_form %}
+            <!-- Link Existing Parent Form -->
+            {% if has_available_parents %}
+            <div class="space-y-4">
+                <div class="form-control">
+                    <label class="label py-1">
+                        <span class="label-text text-xs">Select Parent <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.parent }}
+                    {% if form.parent.errors %}
+                    <label class="label py-0">
+                        <span class="label-text-alt text-error text-xs">{{ form.parent.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            {{ form.is_primary_contact }}
+                            <span class="label-text text-xs">Primary Contact</span>
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            {{ form.is_emergency_contact }}
+                            <span class="label-text text-xs">Emergency Contact</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <p class="font-medium">No available parents to link</p>
+                    <p class="text-xs">All existing parents are already linked to this student, or no parents have been created yet.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <!-- Create New Parent Form -->
+            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Account Section -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-envelope mr-1"></i> Account
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-start gap-2 py-1">
+                                {{ form.create_user_account }}
+                                <div>
+                                    <span class="label-text text-xs font-medium">Create login account</span>
+                                    <p class="text-[10px] text-base-content/60">Credentials will be sent via email</p>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs">Email</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-error text-xs">{{ form.email.errors.0 }}</span>
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-user mr-1"></i> Personal Information
+                    </h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Title</span></label>
+                            {{ form.title }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">First Name <span class="text-error">*</span></span></label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Middle Name</span></label>
+                            {{ form.middle_name }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Last Name <span class="text-error">*</span></span></label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Phone Number <span class="text-error">*</span></span></label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Alternate Phone</span></label>
+                            {{ form.alternate_phone }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Relationship -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-heart mr-1"></i> Relationship
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Relationship <span class="text-error">*</span></span></label>
+                            {{ form.relationship }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mt-3">
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-start gap-2">
+                                {{ form.is_primary_contact }}
+                                <span class="label-text text-xs">Primary Contact</span>
+                            </label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-start gap-2">
+                                {{ form.is_emergency_contact }}
+                                <span class="label-text text-xs">Emergency Contact</span>
+                            </label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-start gap-2">
+                                {{ form.can_pickup_student }}
+                                <span class="label-text text-xs">Can Pickup</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Information -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-briefcase mr-1"></i> Professional (Optional)
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Occupation</span></label>
+                            {{ form.occupation }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Employer</span></label>
+                            {{ form.employer }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Work Phone</span></label>
+                            {{ form.work_phone }}
+                        </div>
+                        <div class="form-control col-span-2">
+                            <label class="label py-0.5"><span class="label-text text-xs">Work Address</span></label>
+                            {{ form.work_address }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-home mr-1"></i> Address (Optional)
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Hometown</span></label>
+                            {{ form.hometown }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Region</span></label>
+                            {{ form.region }}
+                        </div>
+                        <div class="form-control col-span-2">
+                            <label class="label py-0.5"><span class="label-text text-xs">Residential Address</span></label>
+                            {{ form.residential_address }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('parent-modal').remove()">
+                    {% if is_link_form and not has_available_parents %}Close{% else %}Cancel{% endif %}
+                </button>
+                {% if not is_link_form or has_available_parents %}
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i>
+                    {% if is_link_form %}Link Parent{% else %}Add Parent{% endif %}
+                </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('parent-modal').remove()"></div>
+</div>
+
+<!-- Script to handle modal close event from HTMX -->
+<script>
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.getElementById('parent-modal');
+        if (modal) modal.remove();
+    });
+</script>

@@ -1,0 +1,265 @@
+<!-- Teacher Form Modal -->
+<div class="modal modal-open" id="teacher-modal">
+    <div class="modal-box max-w-3xl">
+        <form method="post"
+              hx-post="{% if teacher %}{% url 'teachers:update' teacher.pk %}{% else %}{% url 'teachers:add' %}{% endif %}"
+              hx-target="#teacher-modal"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-chalkboard-teacher text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-error mb-4">
+                {% for error in form.non_field_errors %}
+                    <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <!-- Account Creation (only for new teachers) -->
+                {% if not teacher %}
+                <div class="bg-base-200/50 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-user-shield mr-1"></i> Login Account
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-start gap-2">
+                                {{ form.create_user_account }}
+                                <span class="label-text">Create login account</span>
+                            </label>
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Email</span>
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="form-control">
+                    <label class="label py-0.5">
+                        <span class="label-text text-sm">Email <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <label class="label py-0">
+                        <span class="label-text-alt text-error">{{ form.email.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Personal Information -->
+                <div class="bg-base-200/50 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-user mr-1"></i> Personal Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">First Name <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-error">{{ form.first_name.errors.0 }}</span>
+                            </label>
+                            {% endif %}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Middle Name</span>
+                            </label>
+                            {{ form.middle_name }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Last Name <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-error">{{ form.last_name.errors.0 }}</span>
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Date of Birth</span>
+                            </label>
+                            {{ form.date_of_birth }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Gender</span>
+                            </label>
+                            {{ form.gender }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Information -->
+                <div class="bg-base-200/50 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-id-card mr-1"></i> Professional Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Staff ID <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.staff_id }}
+                            {% if form.staff_id.errors %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-error">{{ form.staff_id.errors.0 }}</span>
+                            </label>
+                            {% endif %}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Ghana Card Number</span>
+                            </label>
+                            {{ form.ghana_card_number }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">SSNIT Number</span>
+                            </label>
+                            {{ form.ssnit_number }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employment Details -->
+                <div class="bg-base-200/50 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-briefcase mr-1"></i> Employment Details
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Employment Status <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.employment_status }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Date Employed <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.date_employed }}
+                            {% if form.date_employed.errors %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-error">{{ form.date_employed.errors.0 }}</span>
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Qualification</span>
+                            </label>
+                            {{ form.qualification }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Specialization</span>
+                            </label>
+                            {{ form.specialization }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="bg-base-200/50 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-phone mr-1"></i> Contact Information
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Phone Number</span>
+                            </label>
+                            {{ form.phone_number }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Emergency Contact Name</span>
+                            </label>
+                            {{ form.emergency_contact_name }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Emergency Contact Phone</span>
+                            </label>
+                            {{ form.emergency_contact_phone }}
+                        </div>
+                    </div>
+                    <div class="form-control mt-3">
+                        <label class="label py-0.5">
+                            <span class="label-text text-sm">Residential Address</span>
+                        </label>
+                        {{ form.residential_address }}
+                    </div>
+                </div>
+
+                <!-- Status (only for edit) -->
+                {% if teacher %}
+                <div class="bg-base-200/50 rounded-lg p-4">
+                    <h4 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-toggle-on mr-1"></i> Status
+                    </h4>
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            {{ form.is_active }}
+                            <span class="label-text">Active</span>
+                        </label>
+                    </div>
+                    {% if not teacher.is_active %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Termination Date</span>
+                            </label>
+                            {{ form.termination_date }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5">
+                                <span class="label-text text-sm">Termination Reason</span>
+                            </label>
+                            {{ form.termination_reason }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('teacher-modal').remove()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('teacher-modal').remove()"></div>
+</div>

@@ -1,0 +1,97 @@
+<!-- Class Form Modal -->
+<div class="modal modal-open" id="class-modal">
+    <div class="modal-box max-w-2xl">
+        <form method="post"
+              hx-post="{% if class %}{% url 'academics:class_edit' class.pk %}{% else %}{% url 'academics:class_add' %}{% endif %}"
+              hx-target="#class-list"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-chalkboard text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Basic Information -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-info-circle mr-1"></i> Basic Information
+                    </h4>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Grade Level <span class="text-error">*</span></span></label>
+                            {{ form.grade_level }}
+                            {% if form.grade_level.errors %}
+                            <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.grade_level.errors.0 }}</span></label>
+                            {% endif %}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Section</span></label>
+                            {{ form.section }}
+                            {% if form.section.errors %}
+                            <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.section.errors.0 }}</span></label>
+                            {% endif %}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Programme</span></label>
+                            {{ form.programme }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class Details -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-door-open mr-1"></i> Class Details
+                    </h4>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Capacity</span></label>
+                            {{ form.capacity }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Room Number</span></label>
+                            {{ form.room_number }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Building</span></label>
+                            {{ form.building }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment -->
+                <div class="bg-base-200/50 rounded-lg p-3">
+                    <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-3">
+                        <i class="fas fa-user-tie mr-1"></i> Assignment
+                    </h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="form-control">
+                            <label class="label py-0.5"><span class="label-text text-xs">Class Teacher</span></label>
+                            {{ form.class_teacher }}
+                        </div>
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-start gap-2 mt-6">
+                                {{ form.is_active }}
+                                <span class="label-text text-xs">Active</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('class-modal').remove()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('class-modal').remove()"></div>
+</div>

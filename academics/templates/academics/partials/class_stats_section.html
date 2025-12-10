@@ -1,0 +1,53 @@
+<!-- Class Stats Section -->
+<div id="class-stats-section" class="space-y-4">
+    <!-- Enrollment Stats -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-4">
+            <h2 class="card-title text-sm">
+                <i class="fas fa-chart-pie text-primary"></i> Enrollment
+                {% if selected_year %}
+                <span class="badge badge-ghost badge-sm ml-2">{{ selected_year.name }}</span>
+                {% endif %}
+            </h2>
+            <div class="flex flex-col items-center mt-2">
+                {% with enrollment_count=enrollments|length %}
+                {% widthratio enrollment_count class.capacity 100 as enrollment_pct %}
+                <div class="radial-progress text-primary" style="--value:{{ enrollment_pct|default:0 }}; --size:8rem;" role="progressbar">
+                    {{ enrollment_pct|default:0 }}%
+                </div>
+                <p class="text-sm mt-2">
+                    <span class="font-bold">{{ enrollment_count }}</span> / {{ class.capacity }} students
+                </p>
+                {% if enrollment_count >= class.capacity %}
+                    <div class="badge badge-error badge-sm mt-1">Class Full</div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-4">
+            <h2 class="card-title text-sm">
+                <i class="fas fa-chart-bar text-primary"></i> Quick Stats
+            </h2>
+            <div class="space-y-2 mt-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-base-content/60">Subjects</span>
+                    <span class="font-medium">{{ subjects.count }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-base-content/60">Enrolled Students</span>
+                    <span class="font-medium">{{ enrollments|length }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-base-content/60">Available Seats</span>
+                    {% with enrollment_count=enrollments|length %}
+                    <span class="font-medium">{{ class.capacity|add:"-"|add:enrollment_count }}</span>
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

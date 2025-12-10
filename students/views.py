@@ -3,8 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.db import models
 from django.http import HttpResponse
-from .models import Student
-from .forms import StudentCreateForm, StudentUpdateForm, StudentBulkImportForm
+from django.contrib import messages
+from .models import Student, Parent
+from .forms import (
+    StudentCreateForm, StudentUpdateForm, StudentBulkImportForm,
+    ParentCreateForm, LinkExistingParentForm
+)
 from .imports import (
     generate_template_csv,
     generate_template_xlsx,
@@ -65,7 +69,7 @@ def student_list_view(request):
     # Get available classes for the filter dropdown
     try:
         from academics.models import Class
-        classes = Class.objects.filter(is_active=True).select_related('grade_level', 'academic_year')
+        classes = Class.objects.filter(is_active=True).select_related('grade_level', 'programme')
     except ImportError:
         classes = []
 
@@ -118,6 +122,21 @@ def student_detail_view(request, pk):
         pk=pk
     )
 
+    # Fetch enrollment history
+    try:
+        from academics.models import ClassEnrollment
+        enrollment_history = ClassEnrollment.objects.filter(
+            student=student
+        ).select_related(
+            'class_instance__grade_level',
+            'class_instance__programme',
+            'academic_year',
+            'promoted_from__class_instance',
+            'promoted_from__academic_year'
+        ).order_by('-academic_year__start_date')
+    except ImportError:
+        enrollment_history = []
+
     breadcrumbs = [
         {'name': 'Dashboard', 'url': reverse('dashboard:main_partial')},
         {'name': 'Students', 'url': reverse('students:list')},
@@ -127,6 +146,7 @@ def student_detail_view(request, pk):
     context = {
         'student': student,
         'breadcrumbs': breadcrumbs,
+        'enrollment_history': enrollment_history,
     }
 
     if request.htmx:
@@ -276,7 +296,7 @@ def student_bulk_import_view(request):
 
         if form.is_valid():
             file = form.cleaned_data['file']
-            default_password = form.cleaned_data['default_password']
+            create_user_accounts = form.cleaned_data['create_user_accounts']
 
             action = request.POST.get('action', 'validate')
 
@@ -310,7 +330,7 @@ def student_bulk_import_view(request):
             elif action == 'import':
                 # Process the import
                 file.seek(0)
-                success_count, error_count, errors, stats = process_import_file(file, default_password)
+                success_count, error_count, errors, stats = process_import_file(file, create_accounts=create_user_accounts)
 
                 # Build detailed message
                 msg_parts = [f'Successfully imported {success_count} student(s).']
@@ -376,3 +396,154 @@ def download_import_template(request, format='csv'):
     response = HttpResponse(content, content_type=content_type)
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+@login_required
+def student_export_pdf_view(request, pk):
+    """
+    Render a print-friendly student profile page.
+    Users can use browser's Print > Save as PDF functionality.
+    """
+    from django.db import connection
+    from schools.models import School
+
+    student = get_object_or_404(
+        Student.objects.select_related('user', 'current_class').prefetch_related('parents'),
+        pk=pk
+    )
+
+    # Get school info for header
+    try:
+        school = School.objects.get(schema_name=connection.schema_name)
+    except School.DoesNotExist:
+        school = None
+
+    # Fetch enrollment history
+    try:
+        from academics.models import ClassEnrollment
+        enrollment_history = ClassEnrollment.objects.filter(
+            student=student
+        ).select_related(
+            'class_instance__grade_level',
+            'class_instance__programme',
+            'academic_year'
+        ).order_by('-academic_year__start_date')
+    except ImportError:
+        enrollment_history = []
+
+    context = {
+        'student': student,
+        'school': school,
+        'enrollment_history': enrollment_history,
+    }
+
+    return render(request, 'students/pdf/student_profile.html', context)
+
+
+@login_required
+def add_parent_view(request, student_pk):
+    """
+    View to add a new parent and link to a student.
+    Renders as a modal.
+    """
+    student = get_object_or_404(Student, pk=student_pk)
+
+    if request.method == 'POST':
+        form = ParentCreateForm(request.POST, student=student)
+        if form.is_valid():
+            parent = form.save()
+            messages.success(request, f'Parent {parent.get_full_name()} added successfully.')
+
+            # Return updated parents section for HTMX with modal close trigger
+            if request.htmx:
+                response = render(request, 'students/partials/parent_list.html', {
+                    'student': student,
+                })
+                response['HX-Trigger'] = 'closeModal'
+                return response
+
+            return redirect('students:detail', pk=student_pk)
+    else:
+        form = ParentCreateForm(student=student)
+
+    context = {
+        'form': form,
+        'student': student,
+        'modal_title': f'Add Parent for {student.get_full_name()}',
+    }
+
+    return render(request, 'students/partials/parent_form_modal.html', context)
+
+
+@login_required
+def link_parent_view(request, student_pk):
+    """
+    View to link an existing parent to a student.
+    Renders as a modal.
+    """
+    student = get_object_or_404(Student, pk=student_pk)
+
+    # Get all parents not already linked to this student
+    linked_parent_pks = student.parents.values_list('pk', flat=True)
+    available_parents = Parent.objects.exclude(pk__in=linked_parent_pks)
+
+    if request.method == 'POST':
+        form = LinkExistingParentForm(request.POST, student=student)
+        # Set queryset for validation
+        form.fields['parent'].queryset = available_parents
+        if form.is_valid():
+            parent = form.save()
+            messages.success(request, f'Parent {parent.get_full_name()} linked successfully.')
+
+            # Return updated parents section for HTMX with modal close trigger
+            if request.htmx:
+                response = render(request, 'students/partials/parent_list.html', {
+                    'student': student,
+                })
+                response['HX-Trigger'] = 'closeModal'
+                return response
+
+            return redirect('students:detail', pk=student_pk)
+    else:
+        form = LinkExistingParentForm(student=student)
+        form.fields['parent'].queryset = available_parents
+
+    context = {
+        'form': form,
+        'student': student,
+        'modal_title': f'Link Existing Parent to {student.get_full_name()}',
+        'is_link_form': True,
+        'has_available_parents': available_parents.exists(),
+    }
+
+    return render(request, 'students/partials/parent_form_modal.html', context)
+
+
+@login_required
+def unlink_parent_view(request, student_pk, parent_pk):
+    """
+    View to unlink a parent from a student.
+    """
+    student = get_object_or_404(Student, pk=student_pk)
+    parent = get_object_or_404(Parent, pk=parent_pk)
+
+    if request.method == 'POST':
+        parent.students.remove(student)
+        messages.success(request, f'Parent {parent.get_full_name()} unlinked from student.')
+
+        # Return updated parents section for HTMX with modal close trigger
+        if request.htmx:
+            response = render(request, 'students/partials/parent_list.html', {
+                'student': student,
+            })
+            response['HX-Trigger'] = 'closeModal'
+            return response
+
+        return redirect('students:detail', pk=student_pk)
+
+    # Show confirmation modal
+    context = {
+        'student': student,
+        'parent': parent,
+    }
+    return render(request, 'students/partials/unlink_parent_modal.html', context)

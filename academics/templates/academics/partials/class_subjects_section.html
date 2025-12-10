@@ -1,0 +1,78 @@
+<div class="card bg-base-100 shadow">
+    <div class="card-body p-4">
+        <div class="flex justify-between items-center">
+            <h2 class="card-title text-sm">
+                <i class="fas fa-book text-primary"></i> Subjects ({{ subjects.count }})
+            </h2>
+            <button class="btn btn-primary btn-xs"
+                    hx-get="{% url 'academics:class_subject_add' class.pk %}"
+                    hx-target="body"
+                    hx-swap="beforeend">
+                <i class="fas fa-plus"></i> Add Subject
+            </button>
+        </div>
+        {% if subjects %}
+        <div class="overflow-x-auto mt-2">
+            <table class="table table-zebra table-xs">
+                <thead class="bg-base-200">
+                    <tr>
+                        <th>Subject</th>
+                        <th>Teacher</th>
+                        <th>Periods/Week</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cs in subjects %}
+                    <tr class="hover">
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span class="badge badge-ghost badge-xs">{{ cs.subject.code }}</span>
+                                {{ cs.subject.name }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if cs.teacher %}
+                                {{ cs.teacher.get_full_name }}
+                            {% else %}
+                                <span class="text-warning text-xs">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ cs.periods_per_week }}</td>
+                        <td class="text-center">
+                            <div class="join">
+                                <button class="btn btn-ghost btn-xs join-item"
+                                        hx-get="{% url 'academics:class_subject_edit' class.pk cs.pk %}"
+                                        hx-target="body"
+                                        hx-swap="beforeend"
+                                        title="Edit">
+                                    <i class="fas fa-edit text-warning"></i>
+                                </button>
+                                <button class="btn btn-ghost btn-xs join-item"
+                                        hx-get="{% url 'academics:class_subject_remove' class.pk cs.pk %}"
+                                        hx-target="body"
+                                        hx-swap="beforeend"
+                                        title="Remove">
+                                    <i class="fas fa-times text-error"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-base-content/60">
+            <i class="fas fa-book text-2xl mb-2"></i>
+            <p class="text-sm">No subjects assigned to this class</p>
+            <button class="btn btn-primary btn-xs mt-2"
+                    hx-get="{% url 'academics:class_subject_add' class.pk %}"
+                    hx-target="body"
+                    hx-swap="beforeend">
+                <i class="fas fa-plus"></i> Add First Subject
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>

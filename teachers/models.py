@@ -47,7 +47,6 @@ class Teacher(models.Model):
         max_length=20, blank=True, help_text="Ghana Card ID"
     )
     ssnit_number = models.CharField(max_length=20, blank=True)
-    tin_number = models.CharField(max_length=20, blank=True)
 
     # Employment details
     employment_status = models.CharField(

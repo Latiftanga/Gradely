@@ -1,0 +1,31 @@
+<!-- Grading Scale Delete Modal -->
+<div class="modal modal-open" id="grading-scale-delete-modal">
+    <div class="modal-box max-w-sm">
+        <h3 class="font-bold text-lg flex items-center gap-2 text-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            Delete Grading Scale
+        </h3>
+
+        <p class="py-4">
+            Are you sure you want to delete <strong>{{ scale.name }}</strong>?
+            This will also delete all grade definitions within this scale.
+        </p>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('grading-scale-delete-modal').remove()">
+                Cancel
+            </button>
+            <form method="post"
+                  hx-post="{% url 'dashboard:grading_scale_delete' scale.pk %}"
+                  hx-target="#grading-scales-section"
+                  hx-swap="outerHTML">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error btn-sm">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('grading-scale-delete-modal').remove()"></div>
+</div>

@@ -1,0 +1,56 @@
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="academic-year-list">
+    {% for year in years %}
+    <div class="card bg-base-100 shadow hover:shadow-lg transition-shadow">
+        <div class="card-body p-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="card-title text-lg">{{ year.name }}</h3>
+                    <p class="text-xs text-base-content/60">
+                        {{ year.start_date|date:"M d, Y" }} - {{ year.end_date|date:"M d, Y" }}
+                    </p>
+                </div>
+                {% if year.is_current %}
+                    <span class="badge badge-success badge-sm">Current</span>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
+                <div class="bg-base-200/50 rounded p-2 text-center">
+                    <p class="text-xs text-base-content/60">Terms</p>
+                    <p class="font-bold">{{ year.term_count }}</p>
+                </div>
+                <div class="bg-base-200/50 rounded p-2 text-center">
+                    <p class="text-xs text-base-content/60">Enrollments</p>
+                    <p class="font-bold">{{ year.enrollment_count }}</p>
+                </div>
+            </div>
+
+            <div class="card-actions justify-end mt-3">
+                <button class="btn btn-ghost btn-xs"
+                        hx-get="{% url 'academics:academic_year_edit' year.pk %}"
+                        hx-target="body"
+                        hx-swap="beforeend">
+                    <i class="fas fa-edit text-warning"></i> Edit
+                </button>
+                <button class="btn btn-ghost btn-xs"
+                        hx-get="{% url 'academics:academic_year_delete' year.pk %}"
+                        hx-target="body"
+                        hx-swap="beforeend">
+                    <i class="fas fa-trash text-error"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-12 text-base-content/60">
+        <i class="fas fa-calendar-alt text-4xl mb-2"></i>
+        <p>No academic years configured</p>
+        <button class="btn btn-primary btn-sm mt-2"
+                hx-get="{% url 'academics:academic_year_add' %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-plus"></i> Add First Academic Year
+        </button>
+    </div>
+    {% endfor %}
+</div>

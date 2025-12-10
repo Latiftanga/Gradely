@@ -1,0 +1,75 @@
+<!-- Class Enrollment Form Modal -->
+<div class="modal modal-open" id="enrollment-modal">
+    <div class="modal-box max-w-md">
+        <form method="post"
+              hx-post="{% url 'academics:class_enrollment_add' class.pk %}"
+              hx-target="#class-students-section"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-user-plus text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Academic Year -->
+                <div class="form-control">
+                    <label class="label py-0.5">
+                        <span class="label-text text-xs">Academic Year <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.academic_year }}
+                    {% if form.academic_year.errors %}
+                    <label class="label py-0">
+                        <span class="label-text-alt text-error text-xs">{{ form.academic_year.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Student -->
+                <div class="form-control">
+                    <label class="label py-0.5">
+                        <span class="label-text text-xs">Student <span class="text-error">*</span></span>
+                    </label>
+                    {{ form.student }}
+                    {% if form.student.errors %}
+                    <label class="label py-0">
+                        <span class="label-text-alt text-error text-xs">{{ form.student.errors.0 }}</span>
+                    </label>
+                    {% endif %}
+                </div>
+
+                <!-- Hidden class_instance -->
+                {{ form.class_instance }}
+
+                <!-- Notes -->
+                <div class="form-control">
+                    <label class="label py-0.5">
+                        <span class="label-text text-xs">Notes</span>
+                    </label>
+                    {{ form.notes }}
+                </div>
+
+                <!-- Active Status -->
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-2">
+                        {{ form.is_active }}
+                        <span class="label-text text-xs">Active Enrollment</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('enrollment-modal').remove()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-user-plus"></i> Enroll
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('enrollment-modal').remove()"></div>
+</div>

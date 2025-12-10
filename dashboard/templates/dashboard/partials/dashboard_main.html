@@ -1,5 +1,15 @@
 {% include 'dashboard/partials/breadcrumb.html' %}
 
+<!-- Error Message -->
+{% if error %}
+<div class="alert alert-error shadow-lg mb-6">
+    <div>
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ error }}</span>
+    </div>
+</div>
+{% endif %}
+
 <!-- Header -->
 <div class="flex justify-between items-center mb-6">
     <div>
@@ -16,8 +26,8 @@
                 <i class="fas fa-users text-3xl"></i>
             </div>
             <div class="stat-title">Total Students</div>
-            <div class="stat-value">1,200</div>
-            <div class="stat-desc">21% more than last month</div>
+            <div class="stat-value">{{ total_students|default:0 }}</div>
+            <div class="stat-desc">{{ male_count|default:0 }} Male, {{ female_count|default:0 }} Female</div>
         </div>
     </div>
     <!-- Stat Card: Total Teachers -->
@@ -27,8 +37,8 @@
                 <i class="fas fa-chalkboard-teacher text-3xl"></i>
             </div>
             <div class="stat-title">Total Teachers</div>
-            <div class="stat-value">76</div>
-            <div class="stat-desc">5% more than last year</div>
+            <div class="stat-value">{{ total_teachers|default:0 }}</div>
+            <div class="stat-desc">Active teaching staff</div>
         </div>
     </div>
     <!-- Stat Card: Classes -->
@@ -38,19 +48,19 @@
                 <i class="fas fa-school text-3xl"></i>
             </div>
             <div class="stat-title">Classes</div>
-            <div class="stat-value">45</div>
-            <div class="stat-desc">JHS, SHS, and Basic</div>
+            <div class="stat-value">{{ total_classes|default:0 }}</div>
+            <div class="stat-desc">{% if current_academic_year %}{{ current_academic_year.name }}{% else %}All years{% endif %}</div>
         </div>
     </div>
-    <!-- Stat Card: Attendance -->
+    <!-- Stat Card: Gender Distribution -->
     <div class="stats shadow bg-base-100">
         <div class="stat">
             <div class="stat-figure text-info">
-                <i class="fas fa-user-check text-3xl"></i>
+                <i class="fas fa-chart-pie text-3xl"></i>
             </div>
-            <div class="stat-title">Today's Attendance</div>
-            <div class="stat-value">92%</div>
-            <div class="stat-desc">An increase from yesterday</div>
+            <div class="stat-title">Gender Distribution</div>
+            <div class="stat-value text-2xl">{{ male_percentage|default:0 }}% / {{ female_percentage|default:0 }}%</div>
+            <div class="stat-desc">Male / Female ratio</div>
         </div>
     </div>
 </div>
@@ -78,33 +88,29 @@
         <!-- Recent Activity -->
         <div class="card bg-base-100 shadow-xl">
             <div class="card-body">
-                <h2 class="card-title">Recent Activity</h2>
+                <h2 class="card-title">Recent Enrollments</h2>
+                {% if recent_students %}
                 <ul class="list-none space-y-4">
+                    {% for student in recent_students %}
                     <li class="flex items-start">
                         <div class="avatar placeholder mr-4">
                             <div class="bg-neutral-focus text-neutral-content rounded-full w-8">
-                                <span class="text-xs">KA</span>
+                                <span class="text-xs">{{ student.first_name.0 }}{{ student.last_name.0 }}</span>
                             </div>
                         </div>
                         <div>
-                            <p class="font-semibold">Kofi Annan</p>
-                            <p class="text-sm text-gray-500">was enrolled in JHS 1.</p>
-                            <time class="text-xs text-gray-400">2 hours ago</time>
+                            <p class="font-semibold">{{ student.get_full_name }}</p>
+                            <p class="text-sm text-gray-500">
+                                enrolled in {% if student.current_class %}{{ student.current_class }}{% else %}pending class assignment{% endif %}
+                            </p>
+                            <time class="text-xs text-gray-400">{{ student.date_enrolled|timesince }} ago</time>
                         </div>
                     </li>
-                    <li class="flex items-start">
-                         <div class="avatar placeholder mr-4">
-                            <div class="bg-secondary text-secondary-content rounded-full w-8">
-                                <span class="text-xs">JA</span>
-                            </div>
-                        </div>
-                        <div>
-                            <p class="font-semibold">Jane Doe</p>
-                            <p class="text-sm text-gray-500">submitted final grades for Class 3B.</p>
-                            <time class="text-xs text-gray-400">Yesterday</time>
-                        </div>
-                    </li>
+                    {% endfor %}
                 </ul>
+                {% else %}
+                <p class="text-sm text-gray-500">No recent enrollments</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -115,29 +121,21 @@
             <div class="card-body">
                 <h2 class="card-title">Student Distribution by Class Level</h2>
                 <p class="text-sm text-gray-500 mb-4">A breakdown of students across different levels in the Ghanaian education system.</p>
+                {% if level_distribution %}
                 <div class="space-y-4">
+                    {% for level in level_distribution %}
                     <div>
                         <div class="flex justify-between mb-1">
-                            <span class="font-semibold">Senior High School (SHS)</span>
-                            <span>450 Students</span>
+                            <span class="font-semibold">{{ level.name }}</span>
+                            <span>{{ level.count }} Student{{ level.count|pluralize }} ({{ level.percentage }}%)</span>
                         </div>
-                        <progress class="progress progress-primary" value="45" max="100"></progress>
+                        <progress class="progress {% cycle 'progress-primary' 'progress-secondary' 'progress-accent' %}" value="{{ level.percentage }}" max="100"></progress>
                     </div>
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="font-semibold">Junior High School (JHS)</span>
-                            <span>550 Students</span>
-                        </div>
-                        <progress class="progress progress-secondary" value="55" max="100"></progress>
-                    </div>
-                    <div>
-                        <div class="flex justify-between mb-1">
-                            <span class="font-semibold">Basic School</span>
-                            <span>200 Students</span>
-                        </div>
-                        <progress class="progress progress-accent" value="20" max="100"></progress>
-                    </div>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <p class="text-sm text-gray-500">No student distribution data available</p>
+                {% endif %}
             </div>
         </div>
     </div>

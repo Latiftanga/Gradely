@@ -1,0 +1,80 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Subjects</h1>
+        <p class="text-base-content/60 text-sm">Manage subjects offered in the school</p>
+    </div>
+    <button class="btn btn-primary btn-sm"
+            hx-get="{% url 'academics:subject_add' %}"
+            hx-target="body"
+            hx-swap="beforeend">
+        <i class="fas fa-plus"></i> Add Subject
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats stats-horizontal shadow mb-4 w-full">
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-primary">
+            <i class="fas fa-book text-2xl"></i>
+        </div>
+        <div class="stat-title">Total Subjects</div>
+        <div class="stat-value text-primary text-2xl">{{ subjects|length }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-info">
+            <i class="fas fa-star text-2xl"></i>
+        </div>
+        <div class="stat-title">Core</div>
+        <div class="stat-value text-info text-2xl">-</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-secondary">
+            <i class="fas fa-list text-2xl"></i>
+        </div>
+        <div class="stat-title">Electives</div>
+        <div class="stat-value text-secondary text-2xl">-</div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card bg-base-100 shadow mb-4">
+    <div class="card-body p-3">
+        <form id="subject-filters" class="flex flex-wrap gap-2">
+            <select class="select select-bordered select-sm"
+                    name="type"
+                    hx-get="{% url 'academics:subject_list_partial' %}"
+                    hx-trigger="change"
+                    hx-target="#subject-list"
+                    hx-swap="outerHTML"
+                    hx-include="#subject-filters">
+                <option value="">All Types</option>
+                <option value="core" {% if selected_type == 'core' %}selected{% endif %}>Core Subjects</option>
+                <option value="elective" {% if selected_type == 'elective' %}selected{% endif %}>Elective Subjects</option>
+            </select>
+            <select class="select select-bordered select-sm"
+                    name="status"
+                    hx-get="{% url 'academics:subject_list_partial' %}"
+                    hx-trigger="change"
+                    hx-target="#subject-list"
+                    hx-swap="outerHTML"
+                    hx-include="#subject-filters">
+                <option value="">All Status</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Subject List -->
+{% include 'academics/partials/subject_list.html' %}
+
+<script>
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

@@ -1,0 +1,25 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Academic Years</h1>
+        <p class="text-base-content/60 text-sm">Manage academic years and terms</p>
+    </div>
+    <button class="btn btn-primary btn-sm"
+            hx-get="{% url 'academics:academic_year_add' %}"
+            hx-target="body"
+            hx-swap="beforeend">
+        <i class="fas fa-plus"></i> Add Academic Year
+    </button>
+</div>
+
+<!-- Academic Years List -->
+{% include 'academics/partials/academic_year_list.html' %}
+
+<script>
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

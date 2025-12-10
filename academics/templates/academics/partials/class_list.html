@@ -1,0 +1,129 @@
+<div class="card bg-base-100 shadow overflow-hidden" id="class-list">
+    <div class="overflow-x-auto">
+        <table class="table table-zebra">
+            <thead class="bg-base-200">
+                <tr>
+                    <th>Class</th>
+                    <th>Grade Level</th>
+                    <th>Programme</th>
+                    <th>Class Teacher</th>
+                    <th>Students</th>
+                    <th>Capacity</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for class in classes %}
+                <tr class="hover">
+                    <td>
+                        <a href="{% url 'academics:class_detail' class.pk %}"
+                           hx-get="{% url 'academics:class_detail' class.pk %}"
+                           hx-target="#main-content"
+                           hx-push-url="true"
+                           class="font-medium text-primary hover:underline">
+                            {{ class }}
+                        </a>
+                    </td>
+                    <td>{{ class.grade_level.name }}</td>
+                    <td>
+                        {% if class.programme %}
+                            <span class="badge badge-ghost badge-sm">{{ class.programme.code }}</span>
+                        {% else %}
+                            <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if class.class_teacher %}
+                            {{ class.class_teacher.get_full_name }}
+                        {% else %}
+                            <span class="text-warning text-sm">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ class.student_count|default:0 }}</td>
+                    <td>
+                        <div class="flex items-center gap-1">
+                            <span>{{ class.capacity }}</span>
+                            {% if class.student_count >= class.capacity %}
+                                <span class="badge badge-error badge-sm">Full</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if class.is_active %}
+                            <span class="badge badge-success badge-sm">Active</span>
+                        {% else %}
+                            <span class="badge badge-ghost badge-sm">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="join">
+                            <button class="btn btn-ghost btn-sm join-item"
+                                    hx-get="{% url 'academics:class_detail' class.pk %}"
+                                    hx-target="#main-content"
+                                    hx-push-url="true"
+                                    title="View">
+                                <i class="fas fa-eye text-info"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm join-item"
+                                    hx-get="{% url 'academics:class_edit' class.pk %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend"
+                                    title="Edit">
+                                <i class="fas fa-edit text-warning"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm join-item"
+                                    hx-get="{% url 'academics:class_delete' class.pk %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend"
+                                    title="Delete">
+                                <i class="fas fa-trash text-error"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-8 text-base-content/60">
+                        <i class="fas fa-chalkboard text-4xl mb-2"></i>
+                        <p>No classes found</p>
+                        <button class="btn btn-primary btn-sm mt-2"
+                                hx-get="{% url 'academics:class_add' %}"
+                                hx-target="body"
+                                hx-swap="beforeend">
+                            <i class="fas fa-plus"></i> Add First Class
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if classes.has_other_pages %}
+<div class="flex justify-center mt-4">
+    <div class="join">
+        {% if classes.has_previous %}
+            <button class="join-item btn btn-sm"
+                    hx-get="{% url 'academics:classes' %}?page={{ classes.previous_page_number }}"
+                    hx-target="#class-list">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        {% endif %}
+
+        <button class="join-item btn btn-sm btn-disabled">
+            Page {{ classes.number }} of {{ classes.paginator.num_pages }}
+        </button>
+
+        {% if classes.has_next %}
+            <button class="join-item btn btn-sm"
+                    hx-get="{% url 'academics:classes' %}?page={{ classes.next_page_number }}"
+                    hx-target="#class-list">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

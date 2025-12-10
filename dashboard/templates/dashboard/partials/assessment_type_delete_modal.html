@@ -1,0 +1,31 @@
+<!-- Assessment Type Delete Modal -->
+<div class="modal modal-open" id="assessment-type-delete-modal">
+    <div class="modal-box max-w-sm">
+        <h3 class="font-bold text-lg flex items-center gap-2 text-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            Delete Assessment Type
+        </h3>
+
+        <p class="py-4">
+            Are you sure you want to delete <strong>{{ assessment_type.name }}</strong>?
+            This may affect existing assessments using this type.
+        </p>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('assessment-type-delete-modal').remove()">
+                Cancel
+            </button>
+            <form method="post"
+                  hx-post="{% url 'dashboard:assessment_type_delete' assessment_type.pk %}"
+                  hx-target="#assessment-types-section"
+                  hx-swap="outerHTML">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error btn-sm">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('assessment-type-delete-modal').remove()"></div>
+</div>

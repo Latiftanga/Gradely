@@ -1,0 +1,71 @@
+<!-- Academic Year Form Modal -->
+<div class="modal modal-open" id="academic-year-modal">
+    <div class="modal-box max-w-md">
+        <form method="post"
+              hx-post="{% if year %}{% url 'academics:academic_year_edit' year.pk %}{% else %}{% url 'academics:academic_year_add' %}{% endif %}"
+              hx-target="#academic-year-list"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-calendar-alt text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            <div class="space-y-4">
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs">Name <span class="text-error">*</span></span></label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.name.errors.0 }}</span></label>
+                    {% endif %}
+                    <label class="label py-0"><span class="label-text-alt text-xs">Format: YYYY/YYYY (e.g., 2024/2025)</span></label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs">Start Date <span class="text-error">*</span></span></label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}
+                        <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.start_date.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs">End Date <span class="text-error">*</span></span></label>
+                        {{ form.end_date }}
+                        {% if form.end_date.errors %}
+                        <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.end_date.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            {{ form.is_current }}
+                            <span class="label-text text-xs">Current Year</span>
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            {{ form.is_active }}
+                            <span class="label-text text-xs">Active</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('academic-year-modal').remove()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('academic-year-modal').remove()"></div>
+</div>

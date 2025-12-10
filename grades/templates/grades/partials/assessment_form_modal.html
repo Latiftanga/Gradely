@@ -1,0 +1,158 @@
+<!-- Assessment Form Modal -->
+<div class="modal modal-open" id="assessment-modal">
+    <div class="modal-box max-w-2xl">
+        <form method="post"
+              hx-post="{% if assessment %}{% url 'grades:assessment_update' pk=assessment.pk %}{% else %}{% url 'grades:assessment_add' %}{% endif %}"
+              hx-target="body"
+              hx-swap="beforeend">
+            {% csrf_token %}
+
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">{{ modal_title }}</h3>
+                <button type="button" class="btn btn-ghost btn-sm btn-circle"
+                        onclick="document.getElementById('assessment-modal').remove();">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Class Subject -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Class & Subject *</span>
+                    </label>
+                    {{ form.class_subject }}
+                    {% if form.class_subject.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.class_subject.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Term -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Term *</span>
+                        </label>
+                        {{ form.term }}
+                        {% if form.term.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.term.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <!-- Assessment Type -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Type *</span>
+                        </label>
+                        {{ form.assessment_type }}
+                        {% if form.assessment_type.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.assessment_type.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Title *</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <label class="label">
+                            <span class="label-text-alt text-error">{{ form.title.errors.0 }}</span>
+                        </label>
+                    {% endif %}
+                </div>
+
+                <!-- Description -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text">Description</span>
+                    </label>
+                    {{ form.description }}
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Max Score -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Max Score *</span>
+                        </label>
+                        {{ form.max_score }}
+                        {% if form.max_score.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.max_score.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+
+                    <!-- Weight -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Weight</span>
+                        </label>
+                        {{ form.weight }}
+                        {% if form.weight.errors %}
+                            <label class="label">
+                                <span class="label-text-alt text-error">{{ form.weight.errors.0 }}</span>
+                            </label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Date -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Date</span>
+                        </label>
+                        {{ form.date }}
+                    </div>
+
+                    <!-- Due Date -->
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">Due Date</span>
+                        </label>
+                        {{ form.due_date }}
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <!-- Is Published -->
+                    <div class="form-control">
+                        <label class="label cursor-pointer gap-2">
+                            {{ form.is_published }}
+                            <span class="label-text">Published (visible to students)</span>
+                        </label>
+                    </div>
+
+                    <!-- Is Active -->
+                    <div class="form-control">
+                        <label class="label cursor-pointer gap-2">
+                            {{ form.is_active }}
+                            <span class="label-text">Active</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost"
+                        onclick="document.getElementById('assessment-modal').remove();">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    {% if assessment %}Update{% else %}Create{% endif %} Assessment
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('assessment-modal').remove();"></div>
+</div>

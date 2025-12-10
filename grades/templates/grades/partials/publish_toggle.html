@@ -1,0 +1,10 @@
+<button class="btn btn-outline btn-sm"
+        hx-post="{% url 'grades:toggle_publish' pk=assessment.pk %}"
+        hx-swap="outerHTML"
+        hx-target="this">
+    {% if assessment.is_published %}
+        <i class="fas fa-eye-slash"></i> Unpublish
+    {% else %}
+        <i class="fas fa-eye"></i> Publish
+    {% endif %}
+</button>

@@ -191,6 +191,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=True,
         help_text=_('Designates whether this user should be treated as active.')
     )
+    force_password_change = models.BooleanField(
+        _('force password change'),
+        default=False,
+        help_text=_('Require user to change password on next login.')
+    )
 
     groups = models.ManyToManyField(
         Group,

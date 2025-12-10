@@ -155,14 +155,16 @@ def profile_edit(request):
 @login_required(login_url='accounts:login')
 def change_password(request):
     """Change user password"""
-    
+    user = request.user
+    is_forced = getattr(user, 'force_password_change', False)
+
     if request.method == 'POST':
         current_password = request.POST.get('current_password')
         new_password = request.POST.get('new_password')
         confirm_password = request.POST.get('confirm_password')
-        
+
         # Validate current password
-        if not request.user.check_password(current_password):
+        if not user.check_password(current_password):
             messages.error(request, 'Current password is incorrect.')
         elif new_password != confirm_password:
             messages.error(request, 'New passwords do not match.')
@@ -170,14 +172,22 @@ def change_password(request):
             messages.error(request, 'Password must be at least 8 characters.')
         else:
             # Update password
-            request.user.set_password(new_password)
-            request.user.save()
-            
+            user.set_password(new_password)
+
+            # Clear force_password_change flag if it exists
+            if hasattr(user, 'force_password_change'):
+                user.force_password_change = False
+
+            user.save()
+
             # Update session to prevent logout
             from django.contrib.auth import update_session_auth_hash
-            update_session_auth_hash(request, request.user)
-            
+            update_session_auth_hash(request, user)
+
             messages.success(request, 'Password changed successfully.')
-            return redirect('accounts:profile')
-    
-    return render(request, 'accounts/change_password.html')
+            return redirect('dashboard:main')
+
+    context = {
+        'is_forced': is_forced,
+    }
+    return render(request, 'accounts/change_password.html', context)

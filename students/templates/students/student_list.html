@@ -23,34 +23,34 @@
 </div>
 
 <!-- Stats Cards -->
-<div class="stats stats-horizontal shadow mb-4 w-full text-sm">
+<div class="stats stats-horizontal shadow mb-4 w-full">
     <div class="stat py-3 px-4">
         <div class="stat-figure text-primary">
-            <i class="fas fa-users text-xl"></i>
+            <i class="fas fa-users text-2xl"></i>
         </div>
-        <div class="stat-title text-xs">Total</div>
-        <div class="stat-value text-primary text-xl">{{ total_count|default:students.count }}</div>
+        <div class="stat-title">Total</div>
+        <div class="stat-value text-primary text-2xl">{{ total_count|default:students.count }}</div>
     </div>
     <div class="stat py-3 px-4">
         <div class="stat-figure text-success">
-            <i class="fas fa-user-check text-xl"></i>
+            <i class="fas fa-user-check text-2xl"></i>
         </div>
-        <div class="stat-title text-xs">Active</div>
-        <div class="stat-value text-success text-xl">{{ active_count|default:"-" }}</div>
+        <div class="stat-title">Active</div>
+        <div class="stat-value text-success text-2xl">{{ active_count|default:"-" }}</div>
     </div>
     <div class="stat py-3 px-4">
         <div class="stat-figure text-info">
-            <i class="fas fa-home text-xl"></i>
+            <i class="fas fa-home text-2xl"></i>
         </div>
-        <div class="stat-title text-xs">Boarders</div>
-        <div class="stat-value text-info text-xl">{{ boarder_count|default:"-" }}</div>
+        <div class="stat-title">Boarders</div>
+        <div class="stat-value text-info text-2xl">{{ boarder_count|default:"-" }}</div>
     </div>
     <div class="stat py-3 px-4">
         <div class="stat-figure text-secondary">
-            <i class="fas fa-sun text-xl"></i>
+            <i class="fas fa-sun text-2xl"></i>
         </div>
-        <div class="stat-title text-xs">Day</div>
-        <div class="stat-value text-secondary text-xl">{{ day_count|default:"-" }}</div>
+        <div class="stat-title">Day</div>
+        <div class="stat-value text-secondary text-2xl">{{ day_count|default:"-" }}</div>
     </div>
 </div>
 
@@ -60,9 +60,9 @@
         <div class="flex flex-col lg:flex-row gap-2">
             <!-- Search Bar -->
             <label class="input input-bordered input-sm flex items-center gap-2 flex-1">
-                <i class="fas fa-search text-base-content/40 text-xs"></i>
+                <i class="fas fa-search text-base-content/40"></i>
                 <input type="text"
-                       class="grow text-sm"
+                       class="grow"
                        name="q"
                        placeholder="Search by name or student ID..."
                        value="{{ search_query }}"
@@ -71,12 +71,12 @@
                        hx-target="#student-table-body"
                        hx-swap="innerHTML"
                        hx-indicator="#search-indicator">
-                <span id="search-indicator" class="htmx-indicator loading loading-spinner loading-xs"></span>
+                <span id="search-indicator" class="htmx-indicator loading loading-spinner loading-sm"></span>
             </label>
 
             <!-- Filter Dropdowns -->
             <div class="flex flex-wrap gap-2">
-                <select class="select select-bordered select-xs"
+                <select class="select select-bordered select-sm"
                         name="class_filter"
                         hx-get="{% url 'students:list' %}"
                         hx-trigger="change"
@@ -87,7 +87,7 @@
                         <option value="{{ cls.pk }}" {% if class_filter == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
                     {% endfor %}
                 </select>
-                <select class="select select-bordered select-xs"
+                <select class="select select-bordered select-sm"
                         name="residential_filter"
                         hx-get="{% url 'students:list' %}"
                         hx-trigger="change"
@@ -97,7 +97,7 @@
                     <option value="day" {% if residential_filter == 'day' %}selected{% endif %}>Day Students</option>
                     <option value="boarder" {% if residential_filter == 'boarder' %}selected{% endif %}>Boarders</option>
                 </select>
-                <select class="select select-bordered select-xs"
+                <select class="select select-bordered select-sm"
                         name="status_filter"
                         hx-get="{% url 'students:list' %}"
                         hx-trigger="change"
@@ -107,7 +107,7 @@
                     <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
                     <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
                 </select>
-                <select class="select select-bordered select-xs"
+                <select class="select select-bordered select-sm"
                         name="gender_filter"
                         hx-get="{% url 'students:list' %}"
                         hx-trigger="change"
@@ -125,8 +125,8 @@
 <!-- Student Table -->
 <div class="card bg-base-100 shadow overflow-hidden">
     <div class="overflow-x-auto">
-        <table class="table table-zebra table-sm">
-            <thead class="bg-base-200 text-xs">
+        <table class="table table-zebra">
+            <thead class="bg-base-200">
                 <tr>
                     <th>Student ID</th>
                     <th>Student</th>

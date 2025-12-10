@@ -1,0 +1,59 @@
+<!-- Programme Form Modal -->
+<div class="modal modal-open" id="programme-modal">
+    <div class="modal-box max-w-md">
+        <form method="post"
+              hx-post="{% if programme %}{% url 'academics:programme_edit' programme.pk %}{% else %}{% url 'academics:programme_add' %}{% endif %}"
+              hx-target="#programme-list"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-graduation-cap text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs">Name <span class="text-error">*</span></span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.name.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs">Code <span class="text-error">*</span></span></label>
+                        {{ form.code }}
+                        {% if form.code.errors %}
+                        <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.code.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs">Description</span></label>
+                    {{ form.description }}
+                </div>
+
+                <div class="form-control">
+                    <label class="label cursor-pointer justify-start gap-2">
+                        {{ form.is_active }}
+                        <span class="label-text text-xs">Active</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('programme-modal').remove()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('programme-modal').remove()"></div>
+</div>

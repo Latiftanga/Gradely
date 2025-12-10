@@ -1,0 +1,60 @@
+<!-- Class Subject Form Modal -->
+<div class="modal modal-open" id="class-subject-modal">
+    <div class="modal-box max-w-md">
+        <form method="post"
+              hx-post="{{ request.path }}"
+              hx-target="#class-subjects-section"
+              hx-swap="innerHTML">
+            {% csrf_token %}
+            {{ form.class_instance }}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-book text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            <div class="space-y-4">
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs">Subject <span class="text-error">*</span></span></label>
+                    {{ form.subject }}
+                    {% if form.subject.errors %}
+                    <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.subject.errors.0 }}</span></label>
+                    {% endif %}
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs">Teacher</span></label>
+                    {{ form.teacher }}
+                    {% if form.teacher.errors %}
+                    <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.teacher.errors.0 }}</span></label>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs">Periods/Week</span></label>
+                        {{ form.periods_per_week }}
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2 mt-6">
+                            {{ form.is_active }}
+                            <span class="label-text text-xs">Active</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('class-subject-modal').remove()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('class-subject-modal').remove()"></div>
+</div>

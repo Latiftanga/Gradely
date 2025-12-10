@@ -1,0 +1,43 @@
+<!-- Teacher Delete Modal -->
+<div class="modal modal-open" id="teacher-delete-modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg flex items-center gap-2 text-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            Delete Teacher
+        </h3>
+        <p class="py-4">
+            Are you sure you want to delete <strong>{{ teacher.get_full_name }}</strong>?
+            This will also delete their user account and cannot be undone.
+        </p>
+
+        {% if teacher.managed_classes.exists or teacher.subject_assignments.exists %}
+        <div class="alert alert-warning text-sm mb-4">
+            <i class="fas fa-info-circle"></i>
+            <span>
+                This teacher has
+                {% if teacher.managed_classes.exists %}{{ teacher.managed_classes.count }} class(es) managed{% endif %}
+                {% if teacher.managed_classes.exists and teacher.subject_assignments.exists %} and {% endif %}
+                {% if teacher.subject_assignments.exists %}{{ teacher.subject_assignments.count }} subject assignment(s){% endif %}.
+                These will be unassigned.
+            </span>
+        </div>
+        {% endif %}
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('teacher-delete-modal').remove()">
+                Cancel
+            </button>
+            <form method="post"
+                  hx-post="{% url 'teachers:delete' teacher.pk %}"
+                  hx-target="body"
+                  hx-swap="beforeend">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error btn-sm">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('teacher-delete-modal').remove()"></div>
+</div>

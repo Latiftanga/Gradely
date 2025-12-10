@@ -1,0 +1,126 @@
+<div class="card bg-base-100 shadow overflow-hidden" id="teacher-table-container">
+    <div class="overflow-x-auto">
+        <table class="table table-zebra">
+            <thead class="bg-base-200">
+                <tr>
+                    <th>Staff ID</th>
+                    <th>Teacher</th>
+                    <th>Qualification</th>
+                    <th>Specialization</th>
+                    <th>Employment</th>
+                    <th>Classes</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in teachers %}
+                <tr class="hover">
+                    <td>
+                        <div class="font-mono text-sm">{{ teacher.staff_id }}</div>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <div class="avatar placeholder">
+                                <div class="bg-primary text-primary-content rounded-full w-9 h-9">
+                                    <span class="text-sm">{{ teacher.first_name|slice:":1" }}{{ teacher.last_name|slice:":1" }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <a href="{% url 'teachers:detail' teacher.pk %}"
+                                   hx-get="{% url 'teachers:detail' teacher.pk %}"
+                                   hx-target="#main-content"
+                                   hx-push-url="true"
+                                   class="font-medium text-primary hover:underline">
+                                    {{ teacher.get_full_name }}
+                                </a>
+                                <div class="text-sm text-base-content/60">{{ teacher.user.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-ghost badge-sm">{{ teacher.get_qualification_display }}</span>
+                    </td>
+                    <td>
+                        {% if teacher.specialization %}
+                            {{ teacher.specialization }}
+                        {% else %}
+                            <span class="text-base-content/40">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if teacher.employment_status == 'full_time' %}
+                            <span class="badge badge-info badge-sm">Full Time</span>
+                        {% elif teacher.employment_status == 'part_time' %}
+                            <span class="badge badge-secondary badge-sm">Part Time</span>
+                        {% elif teacher.employment_status == 'contract' %}
+                            <span class="badge badge-warning badge-sm">Contract</span>
+                        {% else %}
+                            <span class="badge badge-outline badge-sm">{{ teacher.get_employment_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-1">
+                            <span>{{ teacher.class_count|default:0 }}</span>
+                            {% if teacher.subject_count %}
+                                <span class="text-base-content/40 text-sm">({{ teacher.subject_count }} subjects)</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if teacher.is_active %}
+                            <span class="badge badge-success badge-sm">Active</span>
+                        {% else %}
+                            <span class="badge badge-error badge-sm">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="flex gap-0.5 justify-center">
+                            <button class="btn btn-ghost btn-sm btn-square tooltip" data-tip="View"
+                                    hx-get="{% url 'teachers:detail' teacher.pk %}"
+                                    hx-target="#main-content"
+                                    hx-push-url="true">
+                                <i class="fas fa-eye text-info"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm btn-square tooltip" data-tip="Edit"
+                                    hx-get="{% url 'teachers:update' teacher.pk %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend">
+                                <i class="fas fa-edit text-warning"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm btn-square tooltip" data-tip="Delete"
+                                    hx-get="{% url 'teachers:delete' teacher.pk %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend">
+                                <i class="fas fa-trash text-error"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-8">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="avatar placeholder">
+                                <div class="bg-base-300 text-base-content/30 rounded-full w-12 h-12">
+                                    <i class="fas fa-chalkboard-teacher text-lg"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="font-medium text-base-content/70">No teachers found</p>
+                                <p class="text-sm text-base-content/50">Try adjusting your search or filters</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm"
+                                    hx-get="{% url 'teachers:add' %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend">
+                                <i class="fas fa-plus"></i> Add First Teacher
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

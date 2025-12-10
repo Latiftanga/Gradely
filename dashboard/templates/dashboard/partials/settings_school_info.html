@@ -1,0 +1,184 @@
+<div class="card bg-base-100 shadow" id="school-info-form">
+    <div class="card-body p-4">
+        <form method="post"
+              enctype="multipart/form-data"
+              hx-post="{% url 'dashboard:settings_school_info' %}"
+              hx-target="#school-info-form"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column - Branding & Basic Info -->
+                <div class="space-y-4">
+                    <!-- Logo & Favicon -->
+                    <div class="bg-base-200/50 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                            <i class="fas fa-image mr-1"></i> Branding
+                        </h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">School Logo</span>
+                                </label>
+                                {% if school_settings.logo %}
+                                <div class="mb-2">
+                                    <img src="{{ school_settings.logo.url }}" alt="School Logo" class="h-16 w-16 object-contain rounded border border-base-300">
+                                </div>
+                                {% endif %}
+                                {{ school_form.logo }}
+                            </div>
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">Favicon</span>
+                                </label>
+                                {% if school_settings.favicon %}
+                                <div class="mb-2">
+                                    <img src="{{ school_settings.favicon.url }}" alt="Favicon" class="h-8 w-8 object-contain rounded border border-base-300">
+                                </div>
+                                {% endif %}
+                                {{ school_form.favicon }}
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mt-3">
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">Primary Color</span>
+                                </label>
+                                {{ school_form.primary_color }}
+                            </div>
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">Secondary Color</span>
+                                </label>
+                                {{ school_form.secondary_color }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Info -->
+                    <div class="bg-base-200/50 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                            <i class="fas fa-info-circle mr-1"></i> Basic Information
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">Motto</span>
+                                </label>
+                                {{ school_form.motto }}
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">Principal Name</span>
+                                    </label>
+                                    {{ school_form.principal_name }}
+                                </div>
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">Founded Year</span>
+                                    </label>
+                                    {{ school_form.founded_year }}
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">School Type</span>
+                                </label>
+                                {{ school_form.school_type }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Contact Info -->
+                <div class="space-y-4">
+                    <!-- Contact Details -->
+                    <div class="bg-base-200/50 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                            <i class="fas fa-phone mr-1"></i> Contact Information
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">Email</span>
+                                </label>
+                                {{ school_form.email }}
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">Phone</span>
+                                    </label>
+                                    {{ school_form.phone }}
+                                </div>
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">Alternate Phone</span>
+                                    </label>
+                                    {{ school_form.alternate_phone }}
+                                </div>
+                            </div>
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">Website</span>
+                                </label>
+                                {{ school_form.website }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="bg-base-200/50 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold uppercase text-base-content/60 mb-3">
+                            <i class="fas fa-map-marker-alt mr-1"></i> Address
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="form-control">
+                                <label class="label py-0.5">
+                                    <span class="label-text text-xs">Street Address</span>
+                                </label>
+                                {{ school_form.address }}
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">City</span>
+                                    </label>
+                                    {{ school_form.city }}
+                                </div>
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">Region</span>
+                                    </label>
+                                    {{ school_form.region }}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">Postal Code</span>
+                                    </label>
+                                    {{ school_form.postal_code }}
+                                </div>
+                                <div class="form-control">
+                                    <label class="label py-0.5">
+                                        <span class="label-text text-xs">Country</span>
+                                    </label>
+                                    {{ school_form.country }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex justify-end mt-6">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

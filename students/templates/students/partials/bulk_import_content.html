@@ -39,9 +39,10 @@
             <div>
                 <h3 class="font-bold text-sm">{{ result.message }}</h3>
                 {% if result.stats %}
-                <div class="text-xs mt-1 flex gap-3">
+                <div class="text-xs mt-1 flex gap-3 flex-wrap">
                     {% if result.stats.accounts_created is not None %}
                         <span><i class="fas fa-user-check"></i> {{ result.stats.accounts_created }} accounts</span>
+                        <span><i class="fas fa-envelope"></i> {{ result.stats.emails_sent }} emails sent</span>
                         <span><i class="fas fa-user-clock"></i> {{ result.stats.placeholders_created }} pending</span>
                     {% elif result.stats.with_email is not None %}
                         <span><i class="fas fa-envelope"></i> {{ result.stats.with_email }} with email</span>
@@ -113,14 +114,14 @@
                             </label>
                         </div>
 
-                        <!-- Default Password -->
+                        <!-- Create User Accounts Checkbox -->
                         <div class="form-control">
-                            <label class="label py-1">
-                                <span class="label-text text-xs">Default Password (for accounts with email)</span>
-                            </label>
-                            {{ form.default_password }}
-                            <label class="label py-0">
-                                <span class="label-text-alt text-base-content/60 text-xs">Only used for students with valid email addresses</span>
+                            <label class="label cursor-pointer justify-start gap-3 py-2">
+                                {{ form.create_user_accounts }}
+                                <div>
+                                    <span class="label-text text-xs font-medium">Create login accounts</span>
+                                    <p class="text-[10px] text-base-content/60">For students with email, generate password and send credentials</p>
+                                </div>
                             </label>
                         </div>
 
@@ -302,9 +303,10 @@
                     <i class="fas fa-user-clock text-xs"></i>
                     About Accounts
                 </h2>
-                <ul class="text-xs space-y-1 text-warning">
-                    <li><strong>With email:</strong> Login account created with default password</li>
-                    <li><strong>Without email:</strong> Placeholder created, account can be set up later</li>
+                <ul class="text-xs space-y-1.5 text-warning">
+                    <li><i class="fas fa-check mr-1"></i> <strong>With checkbox ON + email:</strong> Account created, random password generated and emailed</li>
+                    <li><i class="fas fa-times mr-1"></i> <strong>With checkbox OFF:</strong> No login accounts created (placeholders only)</li>
+                    <li><i class="fas fa-key mr-1"></i> Users must change password on first login</li>
                 </ul>
             </div>
         </div>

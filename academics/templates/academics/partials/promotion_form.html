@@ -1,0 +1,239 @@
+<!-- Promotion Setup Form -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Form Section -->
+    <div class="lg:col-span-2">
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-cog text-primary"></i> Promotion Settings
+                </h2>
+
+                <form method="post"
+                      action="{% url 'academics:promotion_preview' %}"
+                      hx-post="{% url 'academics:promotion_preview' %}"
+                      hx-target="#promotion-content"
+                      hx-swap="innerHTML">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Source Section -->
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2 text-sm font-medium text-base-content/80">
+                                <i class="fas fa-sign-out-alt text-warning"></i> From (Source)
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-1">
+                                    <span class="label-text text-xs">Academic Year</span>
+                                </label>
+                                {{ form.source_academic_year }}
+                                {% if form.source_academic_year.errors %}
+                                <label class="label py-0">
+                                    <span class="label-text-alt text-error text-xs">{{ form.source_academic_year.errors.0 }}</span>
+                                </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-1">
+                                    <span class="label-text text-xs">Class</span>
+                                </label>
+                                {{ form.source_class }}
+                                {% if form.source_class.errors %}
+                                <label class="label py-0">
+                                    <span class="label-text-alt text-error text-xs">{{ form.source_class.errors.0 }}</span>
+                                </label>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Target Section -->
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2 text-sm font-medium text-base-content/80">
+                                <i class="fas fa-sign-in-alt text-success"></i> To (Target)
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-1">
+                                    <span class="label-text text-xs">Academic Year</span>
+                                </label>
+                                {{ form.target_academic_year }}
+                                {% if form.target_academic_year.errors %}
+                                <label class="label py-0">
+                                    <span class="label-text-alt text-error text-xs">{{ form.target_academic_year.errors.0 }}</span>
+                                </label>
+                                {% endif %}
+                            </div>
+
+                            <div class="form-control">
+                                <label class="label py-1">
+                                    <span class="label-text text-xs">Class</span>
+                                </label>
+                                {{ form.target_class }}
+                                {% if form.target_class.errors %}
+                                <label class="label py-0">
+                                    <span class="label-text-alt text-error text-xs">{{ form.target_class.errors.0 }}</span>
+                                </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Promotion Type -->
+                    <div class="form-control mt-4">
+                        <label class="label py-1">
+                            <span class="label-text text-xs">Action Type</span>
+                        </label>
+                        {{ form.promotion_type }}
+                        <label class="label py-0">
+                            <span class="label-text-alt text-base-content/60 text-xs" id="promotion-type-hint">
+                                Select an action to perform on students
+                            </span>
+                        </label>
+                    </div>
+
+                    <!-- Target section visibility controlled by JS -->
+                    <div id="target-section-note" class="alert alert-info mt-4 hidden">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>Graduation selected - students will be marked as graduated. No target class needed.</span>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error mt-4">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ form.non_field_errors.0 }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-base-200">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-arrow-right"></i> Continue to Select Students
+                        </button>
+                    </div>
+                </form>
+
+                <script>
+                    // Auto-suggest target class based on source class
+                    document.getElementById('source_class').addEventListener('change', function() {
+                        const sourceClassId = this.value;
+                        if (!sourceClassId) return;
+
+                        fetch(`{% url 'academics:api_suggest_target' %}?source_class=${sourceClassId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.suggested_class) {
+                                    const targetSelect = document.getElementById('target_class');
+                                    targetSelect.value = data.suggested_class.id;
+                                }
+                            });
+                    });
+
+                    // Toggle target section visibility based on promotion type
+                    const promotionTypeSelect = document.getElementById('promotion_type');
+                    const targetSection = document.querySelector('.space-y-3:nth-child(2)').parentElement.querySelector('.space-y-3:nth-child(2)');
+                    const targetNote = document.getElementById('target-section-note');
+                    const hintElement = document.getElementById('promotion-type-hint');
+
+                    function updateTargetVisibility() {
+                        const isGraduation = promotionTypeSelect.value === 'graduate';
+                        const targetYearField = document.getElementById('target_academic_year').closest('.form-control');
+                        const targetClassField = document.getElementById('target_class').closest('.form-control');
+
+                        if (isGraduation) {
+                            targetYearField.classList.add('opacity-50');
+                            targetClassField.classList.add('opacity-50');
+                            targetNote.classList.remove('hidden');
+                            hintElement.textContent = 'Students will be marked as graduated and deactivated';
+                        } else {
+                            targetYearField.classList.remove('opacity-50');
+                            targetClassField.classList.remove('opacity-50');
+                            targetNote.classList.add('hidden');
+
+                            const hints = {
+                                'promote': 'Move students to the next grade level',
+                                'demote': 'Move students to a previous grade level',
+                                'transfer': 'Move students to another class at the same level',
+                                'repeat': 'Keep students in the same class for a new academic year'
+                            };
+                            hintElement.textContent = hints[promotionTypeSelect.value] || 'Select an action to perform on students';
+                        }
+                    }
+
+                    promotionTypeSelect.addEventListener('change', updateTargetVisibility);
+                    updateTargetVisibility(); // Initial call
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Sidebar -->
+    <div class="space-y-4">
+        <!-- Help Card -->
+        <div class="card bg-info/10 border border-info">
+            <div class="card-body p-4">
+                <h3 class="font-semibold text-sm text-info flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> How It Works
+                </h3>
+                <ul class="text-xs space-y-2 mt-2 text-info">
+                    <li class="flex gap-2">
+                        <span class="badge badge-info badge-xs">1</span>
+                        Select the source class and academic year
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="badge badge-info badge-xs">2</span>
+                        Select the target class and academic year
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="badge badge-info badge-xs">3</span>
+                        Choose which students to move
+                    </li>
+                    <li class="flex gap-2">
+                        <span class="badge badge-info badge-xs">4</span>
+                        Confirm and execute the promotion
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Action Types -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold text-sm flex items-center gap-2">
+                    <i class="fas fa-exchange-alt text-primary"></i> Action Types
+                </h3>
+                <div class="space-y-2 mt-2 text-xs">
+                    <div class="flex gap-2">
+                        <span class="badge badge-success badge-xs">Promote</span>
+                        <span class="text-base-content/70">Move to next grade level</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge badge-warning badge-xs">Demote</span>
+                        <span class="text-base-content/70">Move to previous grade level</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge badge-info badge-xs">Transfer</span>
+                        <span class="text-base-content/70">Move to another class (same level)</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="badge badge-ghost badge-xs">Repeat</span>
+                        <span class="text-base-content/70">Stay in same class for new year</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="card bg-warning/10 border border-warning">
+            <div class="card-body p-4">
+                <h3 class="font-semibold text-sm text-warning flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i> Important
+                </h3>
+                <ul class="text-xs space-y-1 mt-2 text-warning">
+                    <li><i class="fas fa-check mr-1"></i> Students already enrolled in target year will be skipped</li>
+                    <li><i class="fas fa-check mr-1"></i> Original enrollment records are preserved</li>
+                    <li><i class="fas fa-check mr-1"></i> Promotion history is tracked automatically</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

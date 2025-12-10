@@ -1,0 +1,55 @@
+<!-- Unlink Parent Confirmation Modal -->
+<div class="modal modal-open" id="unlink-parent-modal">
+    <div class="modal-box max-w-md">
+        <h3 class="font-bold text-lg flex items-center gap-2 text-warning">
+            <i class="fas fa-unlink"></i>
+            Unlink Parent?
+        </h3>
+
+        <div class="py-4">
+            <p class="text-sm">Are you sure you want to unlink this parent from the student?</p>
+
+            <div class="flex items-center gap-3 mt-4 p-3 bg-base-200 rounded-lg">
+                <div class="avatar placeholder">
+                    <div class="bg-neutral text-neutral-content rounded-full w-12 h-12">
+                        <span>{{ parent.first_name|slice:":1" }}{{ parent.last_name|slice:":1" }}</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="font-medium">{{ parent.get_full_name }}</p>
+                    <p class="text-xs text-base-content/60">{{ parent.get_relationship_display }}</p>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-4 text-xs">
+                <i class="fas fa-info-circle"></i>
+                <span>This will only remove the link. The parent record will not be deleted.</span>
+            </div>
+        </div>
+
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost btn-sm"
+                    onclick="document.getElementById('unlink-parent-modal').remove()">
+                Cancel
+            </button>
+            <form method="post"
+                  hx-post="{% url 'students:unlink_parent' student.pk parent.pk %}"
+                  hx-target="#parents-section"
+                  hx-swap="innerHTML">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning btn-sm">
+                    <i class="fas fa-unlink"></i> Unlink
+                </button>
+            </form>
+        </div>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('unlink-parent-modal').remove()"></div>
+</div>
+
+<!-- Script to handle modal close event from HTMX -->
+<script>
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.getElementById('unlink-parent-modal');
+        if (modal) modal.remove();
+    });
+</script>

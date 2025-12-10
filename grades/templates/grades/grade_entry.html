@@ -1,0 +1,183 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Enter Grades</h1>
+        <p class="text-base-content/60 text-sm">
+            {{ assessment.title }} &bull; {{ assessment.class_subject.class_instance }} - {{ assessment.class_subject.subject.name }}
+        </p>
+    </div>
+    <a class="btn btn-outline btn-sm"
+       hx-get="{% url 'grades:assessment_detail' pk=assessment.pk %}"
+       hx-target="#main-content"
+       hx-swap="innerHTML"
+       hx-push-url="{% url 'grades:assessment_detail' pk=assessment.pk %}">
+        <i class="fas fa-arrow-left"></i> Back to Assessment
+    </a>
+</div>
+
+<!-- Assessment Info -->
+<div class="card bg-base-100 shadow mb-4">
+    <div class="card-body p-4">
+        <div class="flex flex-wrap gap-4 text-sm">
+            <div>
+                <span class="text-base-content/60">Type:</span>
+                <span class="font-medium">{{ assessment.assessment_type.name }}</span>
+            </div>
+            <div>
+                <span class="text-base-content/60">Term:</span>
+                <span class="font-medium">{{ assessment.term }}</span>
+            </div>
+            <div>
+                <span class="text-base-content/60">Max Score:</span>
+                <span class="font-medium text-primary">{{ max_score }}</span>
+            </div>
+            <div>
+                <span class="text-base-content/60">Students:</span>
+                <span class="font-medium">{{ student_data|length }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Grade Entry Form -->
+<form method="post" id="grade-entry-form">
+    {% csrf_token %}
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-0">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="font-semibold">Student Grades</h3>
+                <div class="flex gap-2">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="clearAllScores()">
+                        <i class="fas fa-eraser"></i> Clear All
+                    </button>
+                </div>
+            </div>
+
+            {% if student_data %}
+            <div class="overflow-x-auto">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="w-8">#</th>
+                            <th>Student</th>
+                            <th class="w-32">Score ({{ max_score }})</th>
+                            <th class="w-24">Absent</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in student_data %}
+                        <tr class="hover" id="row-{{ item.student.pk }}">
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <div class="avatar placeholder">
+                                        <div class="bg-primary text-primary-content rounded-full w-8">
+                                            <span class="text-xs">{{ item.student.first_name.0 }}{{ item.student.last_name.0 }}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">{{ item.student.get_full_name }}</div>
+                                        <div class="text-sm text-base-content/60">{{ item.student.student_id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="number"
+                                       name="student_{{ item.student.pk }}_score"
+                                       class="input input-bordered input-sm w-24 score-input"
+                                       step="0.01"
+                                       min="0"
+                                       max="{{ max_score }}"
+                                       value="{{ item.score }}"
+                                       data-student-id="{{ item.student.pk }}"
+                                       {% if item.is_absent %}disabled{% endif %}>
+                            </td>
+                            <td>
+                                <input type="checkbox"
+                                       name="student_{{ item.student.pk }}_absent"
+                                       class="checkbox checkbox-sm absent-checkbox"
+                                       data-student-id="{{ item.student.pk }}"
+                                       {% if item.is_absent %}checked{% endif %}
+                                       onchange="toggleScore(this, {{ item.student.pk }})">
+                            </td>
+                            <td>
+                                <input type="text"
+                                       name="student_{{ item.student.pk }}_remarks"
+                                       class="input input-bordered input-sm w-full"
+                                       placeholder="Optional remarks"
+                                       value="{{ item.remarks }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-4 border-t bg-base-200/50">
+                <div class="flex justify-end gap-2">
+                    <a class="btn btn-ghost"
+                       hx-get="{% url 'grades:assessment_detail' pk=assessment.pk %}"
+                       hx-target="#main-content"
+                       hx-swap="innerHTML"
+                       hx-push-url="{% url 'grades:assessment_detail' pk=assessment.pk %}">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary"
+                            hx-post="{% url 'grades:grade_entry' assessment_pk=assessment.pk %}"
+                            hx-target="body"
+                            hx-swap="beforeend"
+                            hx-indicator="#save-indicator">
+                        <span id="save-indicator" class="htmx-indicator loading loading-spinner loading-sm"></span>
+                        <i class="fas fa-save"></i> Save Grades
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="flex flex-col items-center justify-center py-12 text-center">
+                <div class="avatar placeholder mb-4">
+                    <div class="bg-base-200 text-base-content/40 rounded-full w-16 h-16">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="font-semibold text-lg">No Students Enrolled</h3>
+                <p class="text-base-content/60 max-w-md mt-1">
+                    There are no students enrolled in this class for the current academic year.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<script>
+    function toggleScore(checkbox, studentId) {
+        const scoreInput = document.querySelector(`input[name="student_${studentId}_score"]`);
+        if (checkbox.checked) {
+            scoreInput.disabled = true;
+            scoreInput.value = '';
+        } else {
+            scoreInput.disabled = false;
+        }
+    }
+
+    function clearAllScores() {
+        document.querySelectorAll('.score-input').forEach(input => {
+            input.value = '';
+        });
+        document.querySelectorAll('.absent-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+            const studentId = checkbox.dataset.studentId;
+            document.querySelector(`input[name="student_${studentId}_score"]`).disabled = false;
+        });
+    }
+
+    document.body.addEventListener('gradesSaved', function() {
+        htmx.ajax('GET', '{% url "grades:assessment_detail" pk=assessment.pk %}', {
+            target: '#main-content',
+            swap: 'innerHTML'
+        });
+    });
+</script>

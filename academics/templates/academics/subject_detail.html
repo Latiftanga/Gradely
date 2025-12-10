@@ -1,0 +1,167 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div class="flex items-center gap-4">
+        <div class="avatar placeholder">
+            <div class="bg-primary text-primary-content rounded-xl w-14 h-14">
+                <i class="fas fa-book text-xl"></i>
+            </div>
+        </div>
+        <div>
+            <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold">{{ subject.name }}</h1>
+                <span class="badge badge-ghost badge-sm font-mono">{{ subject.code }}</span>
+            </div>
+            <p class="text-base-content/60 text-sm">{{ subject.get_subject_type_display }}</p>
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm"
+                hx-get="{% url 'academics:subjects' %}"
+                hx-target="#main-content"
+                hx-push-url="true">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <button class="btn btn-warning btn-sm"
+                hx-get="{% url 'academics:subject_edit' subject.pk %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Left Column - Details -->
+    <div class="lg:col-span-2 space-y-4">
+        <!-- Subject Info Card -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm">
+                    <i class="fas fa-info-circle text-primary"></i> Subject Information
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                    <div>
+                        <p class="text-xs text-base-content/60">Subject Type</p>
+                        {% if subject.subject_type == 'core' %}
+                            <span class="badge badge-info badge-sm">Core</span>
+                        {% else %}
+                            <span class="badge badge-secondary badge-sm">Elective</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Credit Hours</p>
+                        <p class="font-medium">{{ subject.credit_hours }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Status</p>
+                        {% if subject.is_active %}
+                            <span class="badge badge-success badge-sm">Active</span>
+                        {% else %}
+                            <span class="badge badge-ghost badge-sm">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if subject.description %}
+                <div class="mt-4">
+                    <p class="text-xs text-base-content/60">Description</p>
+                    <p class="text-sm mt-1">{{ subject.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Class Assignments -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm">
+                    <i class="fas fa-chalkboard text-primary"></i> Class Assignments ({{ assignments.count }})
+                </h2>
+                {% if assignments %}
+                <div class="overflow-x-auto mt-2">
+                    <table class="table table-zebra table-xs">
+                        <thead class="bg-base-200">
+                            <tr>
+                                <th>Class</th>
+                                <th>Teacher</th>
+                                <th>Periods/Week</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr class="hover">
+                                <td>
+                                    <a href="{% url 'academics:class_detail' assignment.class_instance.pk %}"
+                                       hx-get="{% url 'academics:class_detail' assignment.class_instance.pk %}"
+                                       hx-target="#main-content"
+                                       hx-push-url="true"
+                                       class="text-primary hover:underline">
+                                        {{ assignment.class_instance }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if assignment.teacher %}
+                                        {{ assignment.teacher.get_full_name }}
+                                    {% else %}
+                                        <span class="text-warning text-xs">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ assignment.periods_per_week }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-base-content/60">
+                    <i class="fas fa-chalkboard text-2xl mb-2"></i>
+                    <p class="text-sm">Not assigned to any classes yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Applicability -->
+    <div class="space-y-4">
+        <!-- Grade Levels -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm">
+                    <i class="fas fa-layer-group text-primary"></i> Grade Levels
+                </h2>
+                <div class="flex flex-wrap gap-1 mt-2">
+                    {% for level in subject.applicable_levels.all %}
+                        <span class="badge badge-outline badge-sm">{{ level.name }}</span>
+                    {% empty %}
+                        <span class="text-base-content/60 text-sm">All levels</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Programmes -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm">
+                    <i class="fas fa-graduation-cap text-primary"></i> Programmes
+                </h2>
+                <div class="flex flex-wrap gap-1 mt-2">
+                    {% for programme in subject.programmes.all %}
+                        <span class="badge badge-outline badge-sm">{{ programme.name }}</span>
+                    {% empty %}
+                        <span class="text-base-content/60 text-sm">All programmes</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

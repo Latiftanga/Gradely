@@ -1,0 +1,94 @@
+<!-- Enrollment History Section -->
+<h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+    <i class="fas fa-history text-primary text-xs"></i>
+    Enrollment History
+</h2>
+
+{% if enrollment_history %}
+<div class="overflow-x-auto">
+    <table class="table table-zebra table-sm">
+        <thead class="bg-base-200">
+            <tr>
+                <th>Academic Year</th>
+                <th>Class</th>
+                <th>Status</th>
+                <th>Promotion</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for enrollment in enrollment_history %}
+            <tr class="hover">
+                <td>
+                    <div class="flex items-center gap-2">
+                        {% if enrollment.academic_year.is_current %}
+                        <span class="badge badge-primary badge-xs">Current</span>
+                        {% endif %}
+                        <span class="font-medium">{{ enrollment.academic_year.name }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <div class="avatar placeholder">
+                            <div class="bg-primary/10 text-primary rounded w-8 h-8">
+                                <span class="text-xs font-bold">{{ enrollment.class_instance.grade_level.numeric_level }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-medium text-sm">{{ enrollment.class_instance }}</p>
+                            {% if enrollment.class_instance.programme %}
+                            <p class="text-xs text-base-content/60">{{ enrollment.class_instance.programme.name }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if enrollment.is_active %}
+                        <span class="badge badge-success badge-sm gap-1">
+                            <i class="fas fa-check text-[8px]"></i> Active
+                        </span>
+                    {% else %}
+                        <span class="badge badge-ghost badge-sm gap-1">
+                            <i class="fas fa-archive text-[8px]"></i> Archived
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if enrollment.promoted_from %}
+                        <div class="flex items-center gap-1 text-xs">
+                            <span class="badge badge-info badge-xs">Promoted</span>
+                            <span class="text-base-content/60">from {{ enrollment.promoted_from.class_instance }}</span>
+                        </div>
+                    {% elif forloop.last %}
+                        <span class="badge badge-success badge-xs">First Enrollment</span>
+                    {% else %}
+                        <span class="text-base-content/40 text-xs">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if enrollment_history|length > 0 %}
+<div class="flex justify-between items-center mt-3 pt-3 border-t border-base-200">
+    <span class="text-xs text-base-content/60">
+        <i class="fas fa-info-circle mr-1"></i>
+        {{ enrollment_history|length }} enrollment record{{ enrollment_history|length|pluralize }}
+    </span>
+</div>
+{% endif %}
+
+{% else %}
+<div class="text-center py-6">
+    <div class="avatar placeholder mb-3">
+        <div class="bg-base-200 text-base-content/40 rounded-full w-12 h-12">
+            <i class="fas fa-clipboard-list text-xl"></i>
+        </div>
+    </div>
+    <p class="text-sm text-base-content/60">No enrollment history available</p>
+    <p class="text-xs text-base-content/40 mt-1">
+        This student hasn't been enrolled in any classes yet.
+    </p>
+</div>
+{% endif %}

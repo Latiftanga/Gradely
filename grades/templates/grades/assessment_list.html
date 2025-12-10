@@ -1,0 +1,127 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Assessments</h1>
+        <p class="text-base-content/60 text-sm">Create and manage assessments for your classes</p>
+    </div>
+    <button class="btn btn-primary btn-sm"
+            hx-get="{% url 'grades:assessment_add' %}"
+            hx-target="body"
+            hx-swap="beforeend">
+        <i class="fas fa-plus"></i> Create Assessment
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats stats-horizontal shadow mb-4 w-full">
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-primary">
+            <i class="fas fa-clipboard-list text-2xl"></i>
+        </div>
+        <div class="stat-title">Total</div>
+        <div class="stat-value text-primary text-2xl">{{ total_count }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-success">
+            <i class="fas fa-check-circle text-2xl"></i>
+        </div>
+        <div class="stat-title">Published</div>
+        <div class="stat-value text-success text-2xl">{{ published_count }}</div>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="card bg-base-100 shadow mb-4">
+    <div class="card-body p-3">
+        <div class="flex flex-col lg:flex-row gap-2">
+            <!-- Search Bar -->
+            <label class="input input-bordered input-sm flex items-center gap-2 flex-1">
+                <i class="fas fa-search text-base-content/40"></i>
+                <input type="text"
+                       class="grow"
+                       name="q"
+                       placeholder="Search assessments..."
+                       value="{{ search_query }}"
+                       hx-get="{% url 'grades:assessment_list_partial' %}"
+                       hx-trigger="keyup changed delay:300ms"
+                       hx-target="#assessment-table-container"
+                       hx-swap="outerHTML"
+                       hx-include="#assessment-filters"
+                       hx-indicator="#search-indicator">
+                <span id="search-indicator" class="htmx-indicator loading loading-spinner loading-sm"></span>
+            </label>
+
+            <!-- Filter Dropdowns -->
+            <form id="assessment-filters" class="flex flex-wrap gap-2">
+                <select class="select select-bordered select-sm"
+                        name="term"
+                        hx-get="{% url 'grades:assessment_list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#assessment-table-container"
+                        hx-swap="outerHTML"
+                        hx-include="#assessment-filters">
+                    <option value="">All Terms</option>
+                    {% for term in terms %}
+                        <option value="{{ term.pk }}" {% if selected_term == term.pk|stringformat:"i" %}selected{% endif %}>{{ term }}</option>
+                    {% endfor %}
+                </select>
+                <select class="select select-bordered select-sm"
+                        name="type"
+                        hx-get="{% url 'grades:assessment_list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#assessment-table-container"
+                        hx-swap="outerHTML"
+                        hx-include="#assessment-filters">
+                    <option value="">All Types</option>
+                    {% for type in assessment_types %}
+                        <option value="{{ type.pk }}" {% if selected_type == type.pk|stringformat:"i" %}selected{% endif %}>{{ type.name }}</option>
+                    {% endfor %}
+                </select>
+                <select class="select select-bordered select-sm"
+                        name="class_subject"
+                        hx-get="{% url 'grades:assessment_list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#assessment-table-container"
+                        hx-swap="outerHTML"
+                        hx-include="#assessment-filters">
+                    <option value="">All Classes/Subjects</option>
+                    {% for cs in class_subjects %}
+                        <option value="{{ cs.pk }}" {% if selected_class_subject == cs.pk|stringformat:"i" %}selected{% endif %}>{{ cs.class_instance }} - {{ cs.subject.name }}</option>
+                    {% endfor %}
+                </select>
+                <select class="select select-bordered select-sm"
+                        name="status"
+                        hx-get="{% url 'grades:assessment_list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#assessment-table-container"
+                        hx-swap="outerHTML"
+                        hx-include="#assessment-filters">
+                    <option value="">All Status</option>
+                    <option value="published" {% if selected_status == 'published' %}selected{% endif %}>Published</option>
+                    <option value="unpublished" {% if selected_status == 'unpublished' %}selected{% endif %}>Unpublished</option>
+                </select>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Assessment Table -->
+{% include 'grades/partials/assessment_table.html' %}
+
+<script>
+    document.body.addEventListener('assessmentAdded', function() {
+        htmx.ajax('GET', '{% url "grades:assessment_list" %}', {target: '#main-content', swap: 'innerHTML'});
+    });
+    document.body.addEventListener('assessmentUpdated', function() {
+        htmx.ajax('GET', '{% url "grades:assessment_list" %}', {target: '#main-content', swap: 'innerHTML'});
+    });
+    document.body.addEventListener('assessmentDeleted', function() {
+        htmx.ajax('GET', '{% url "grades:assessment_list" %}', {target: '#main-content', swap: 'innerHTML'});
+    });
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

@@ -1,0 +1,273 @@
+<!-- Steps Indicator -->
+<ul class="steps steps-horizontal w-full mb-6">
+    <li class="step step-primary">Setup</li>
+    <li class="step step-primary">Select Students</li>
+    <li class="step">Complete</li>
+</ul>
+
+<!-- Summary Card -->
+<div class="card bg-base-100 shadow mb-4">
+    <div class="card-body p-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-6">
+                <!-- Source -->
+                <div class="flex items-center gap-2">
+                    <div class="avatar placeholder">
+                        <div class="bg-warning/20 text-warning rounded-lg w-10 h-10">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">From</p>
+                        <p class="font-medium text-sm">{{ source_class }}</p>
+                        <p class="text-xs text-base-content/60">{{ source_year.name }}</p>
+                    </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="text-2xl text-primary">
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+
+                <!-- Target -->
+                <div class="flex items-center gap-2">
+                    {% if is_graduation %}
+                    <div class="avatar placeholder">
+                        <div class="bg-success/20 text-success rounded-lg w-10 h-10">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Status</p>
+                        <p class="font-medium text-sm">Graduated</p>
+                        <p class="text-xs text-base-content/60">Complete education</p>
+                    </div>
+                    {% else %}
+                    <div class="avatar placeholder">
+                        <div class="bg-success/20 text-success rounded-lg w-10 h-10">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">To</p>
+                        <p class="font-medium text-sm">{{ target_class }}</p>
+                        <p class="text-xs text-base-content/60">{{ target_year.name }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="badge badge-lg
+                {% if promotion_type == 'promote' %}badge-success
+                {% elif promotion_type == 'graduate' %}badge-accent
+                {% elif promotion_type == 'demote' %}badge-warning
+                {% elif promotion_type == 'transfer' %}badge-info
+                {% else %}badge-ghost{% endif %}">
+                {{ promotion_type_display }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats stats-horizontal shadow mb-4 w-full">
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-primary">
+            <i class="fas fa-users text-xl"></i>
+        </div>
+        <div class="stat-title text-xs">Total Students</div>
+        <div class="stat-value text-xl">{{ total_count }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-success">
+            {% if is_graduation %}
+            <i class="fas fa-graduation-cap text-xl"></i>
+            {% else %}
+            <i class="fas fa-user-check text-xl"></i>
+            {% endif %}
+        </div>
+        <div class="stat-title text-xs">{% if is_graduation %}Can Graduate{% else %}Can Promote{% endif %}</div>
+        <div class="stat-value text-xl text-success">{{ promotable_count }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-warning">
+            <i class="fas fa-user-clock text-xl"></i>
+        </div>
+        <div class="stat-title text-xs">{% if is_graduation %}Already Graduated{% else %}Already Enrolled{% endif %}</div>
+        <div class="stat-value text-xl text-warning">{{ already_enrolled_count }}</div>
+    </div>
+</div>
+
+{% if is_final_level and not is_graduation %}
+<div class="alert alert-warning mb-4">
+    <i class="fas fa-exclamation-triangle"></i>
+    <span>This class is at the final grade level. Consider using "Graduate" action for these students.</span>
+</div>
+{% endif %}
+
+<!-- Student Selection Form -->
+<form method="post"
+      action="{% url 'academics:promotion_execute' %}"
+      hx-post="{% url 'academics:promotion_execute' %}"
+      hx-target="#promotion-content"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+
+    <!-- Hidden fields to pass promotion settings -->
+    <input type="hidden" name="source_academic_year" value="{{ source_year.pk }}">
+    <input type="hidden" name="source_class" value="{{ source_class.pk }}">
+    <input type="hidden" name="target_academic_year" value="{{ target_year.pk }}">
+    <input type="hidden" name="target_class" value="{{ target_class.pk }}">
+    <input type="hidden" name="promotion_type" value="{{ promotion_type }}">
+
+    <div class="card bg-base-100 shadow">
+        <div class="card-body p-4">
+            <div class="flex justify-between items-center border-b border-base-200 pb-2 mb-3">
+                <h2 class="card-title text-sm">
+                    <i class="fas fa-user-check text-primary"></i> Select Students to {{ promotion_type_display }}
+                </h2>
+                <div class="flex gap-2">
+                    <button type="button" class="btn btn-ghost btn-xs" onclick="selectAll()">
+                        <i class="fas fa-check-double"></i> Select All
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs" onclick="deselectAll()">
+                        <i class="fas fa-times"></i> Deselect All
+                    </button>
+                </div>
+            </div>
+
+            {% if students_data %}
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead class="bg-base-200">
+                        <tr>
+                            <th class="w-12">
+                                <input type="checkbox" class="checkbox checkbox-sm checkbox-primary"
+                                       id="select-all-checkbox" onchange="toggleAll(this)">
+                            </th>
+                            <th>Student ID</th>
+                            <th>Name</th>
+                            <th>Gender</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in students_data %}
+                        <tr class="hover {% if not item.can_promote %}opacity-50{% endif %}">
+                            <td>
+                                {% if item.can_promote %}
+                                <input type="checkbox"
+                                       class="checkbox checkbox-sm checkbox-primary student-checkbox"
+                                       name="students"
+                                       value="{{ item.student.pk }}"
+                                       checked>
+                                {% else %}
+                                <input type="checkbox"
+                                       class="checkbox checkbox-sm"
+                                       disabled
+                                       title="Already enrolled in target year">
+                                {% endif %}
+                            </td>
+                            <td class="font-mono text-sm">{{ item.student.student_id }}</td>
+                            <td>
+                                <div class="flex items-center gap-2">
+                                    <div class="avatar placeholder">
+                                        <div class="bg-primary text-primary-content rounded-full w-8 h-8">
+                                            <span class="text-xs">{{ item.student.first_name.0 }}{{ item.student.last_name.0 }}</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-medium">{{ item.student.get_full_name }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if item.student.gender == 'M' %}
+                                    <span class="badge badge-info badge-sm">Male</span>
+                                {% else %}
+                                    <span class="badge badge-secondary badge-sm">Female</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.is_already_enrolled %}
+                                    <span class="badge badge-warning badge-sm">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i> Already Enrolled
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-success badge-sm">
+                                        <i class="fas fa-check mr-1"></i> Ready
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center mt-4 pt-4 border-t border-base-200">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        hx-get="{% url 'academics:promotion' %}"
+                        hx-target="#main-content"
+                        hx-swap="innerHTML">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-base-content/60">
+                        <span id="selected-count">{{ promotable_count }}</span> student(s) selected
+                    </span>
+                    <button type="submit" class="btn btn-primary btn-sm" {% if promotable_count == 0 %}disabled{% endif %}>
+                        <i class="fas fa-check"></i> Execute {{ promotion_type_display }}
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <div class="avatar placeholder mb-4">
+                    <div class="bg-base-200 text-base-content/40 rounded-full w-16 h-16">
+                        <i class="fas fa-users-slash text-2xl"></i>
+                    </div>
+                </div>
+                <h3 class="font-semibold">No Students Found</h3>
+                <p class="text-base-content/60 text-sm mt-1">
+                    There are no students enrolled in {{ source_class }} for {{ source_year.name }}.
+                </p>
+                <button type="button" class="btn btn-primary btn-sm mt-4"
+                        hx-get="{% url 'academics:promotion' %}"
+                        hx-target="#main-content"
+                        hx-swap="innerHTML">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<script>
+    function selectAll() {
+        document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = true);
+        document.getElementById('select-all-checkbox').checked = true;
+        updateSelectedCount();
+    }
+
+    function deselectAll() {
+        document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('select-all-checkbox').checked = false;
+        updateSelectedCount();
+    }
+
+    function toggleAll(masterCheckbox) {
+        document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.student-checkbox:checked').length;
+        document.getElementById('selected-count').textContent = count;
+    }
+
+    // Add event listeners to all checkboxes
+    document.querySelectorAll('.student-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+</script>

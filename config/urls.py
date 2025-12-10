@@ -4,13 +4,15 @@ from django.views.generic.base import RedirectView
 
 
 urlpatterns = [
-    # Redirect tenant root to the dashboard
-    path('', RedirectView.as_view(pattern_name='dashboard:main', permanent=False), name='tenant_root_redirect'),
-
     # App-specific URLs
     path('accounts/', include('accounts.urls', namespace='accounts')),
-    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('students/', include('students.urls', namespace='students')),
+    path('teachers/', include('teachers.urls', namespace='teachers')),
+    path('academics/', include('academics.urls', namespace='academics')),
+    path('grades/', include('grades.urls', namespace='grades')),
+
+    # Dashboard at root (must be last to not override other paths)
+    path('', include('dashboard.urls', namespace='dashboard')),
 ]
 
 if settings.DEBUG:

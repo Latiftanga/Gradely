@@ -1,0 +1,82 @@
+<div class="card bg-base-100 shadow" id="grade-levels-section">
+    <div class="card-body p-4">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-semibold">
+                <i class="fas fa-layer-group text-primary mr-1"></i> Grade Levels
+            </h3>
+            <button class="btn btn-primary btn-sm"
+                    hx-get="{% url 'academics:grade_level_add' %}"
+                    hx-target="body"
+                    hx-swap="beforeend">
+                <i class="fas fa-plus"></i> Add Level
+            </button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="table table-zebra table-sm">
+                <thead class="bg-base-200 text-xs">
+                    <tr>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Type</th>
+                        <th>Level</th>
+                        <th>Order</th>
+                        <th>Classes</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for level in grade_levels %}
+                    <tr class="hover">
+                        <td class="font-medium">{{ level.name }}</td>
+                        <td><span class="badge badge-ghost badge-xs">{{ level.code }}</span></td>
+                        <td>{{ level.get_level_type_display }}</td>
+                        <td>{{ level.numeric_level }}</td>
+                        <td>{{ level.order }}</td>
+                        <td>{{ level.class_count }}</td>
+                        <td>
+                            {% if level.is_active %}
+                                <span class="badge badge-success badge-xs">Active</span>
+                            {% else %}
+                                <span class="badge badge-ghost badge-xs">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="join">
+                                <button class="btn btn-ghost btn-xs join-item"
+                                        hx-get="{% url 'academics:grade_level_edit' level.pk %}"
+                                        hx-target="body"
+                                        hx-swap="beforeend"
+                                        title="Edit">
+                                    <i class="fas fa-edit text-warning"></i>
+                                </button>
+                                <button class="btn btn-ghost btn-xs join-item"
+                                        hx-get="{% url 'academics:grade_level_delete' level.pk %}"
+                                        hx-target="body"
+                                        hx-swap="beforeend"
+                                        title="Delete">
+                                    <i class="fas fa-trash text-error"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-base-content/60">
+                            <i class="fas fa-layer-group text-4xl mb-2"></i>
+                            <p>No grade levels configured</p>
+                            <button class="btn btn-primary btn-sm mt-2"
+                                    hx-get="{% url 'academics:grade_level_add' %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend">
+                                <i class="fas fa-plus"></i> Add First Level
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

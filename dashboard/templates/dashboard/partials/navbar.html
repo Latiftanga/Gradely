@@ -1,25 +1,25 @@
-<div class="navbar bg-base-100 shadow-md sticky top-0 z-10">
+<nav class="navbar bg-base-100 shadow-md sticky top-0 z-10" role="navigation" aria-label="Top navigation">
     <div class="flex-1">
-        <a class="btn btn-ghost text-xl">{{ tenant.name }}</a>
+        <span class="btn btn-ghost text-xl" aria-label="School name">{{ tenant.name }}</span>
     </div>
     <div class="flex-none">
         <!-- Theme Toggle Button -->
-        <label class="swap swap-rotate btn btn-ghost btn-circle">
-            <input type="checkbox" onchange="toggleTheme()" />
-            <i class="swap-on fas fa-moon"></i>
-            <i class="swap-off fas fa-sun"></i>
+        <label class="swap swap-rotate btn btn-ghost btn-circle" aria-label="Toggle dark mode">
+            <input type="checkbox" id="theme-toggle-checkbox" class="sr-only" aria-label="Dark mode toggle" />
+            <i class="swap-on fas fa-moon" aria-hidden="true"></i>
+            <i class="swap-off fas fa-sun" aria-hidden="true"></i>
         </label>
         <div class="dropdown dropdown-end">
-            <label tabindex="0" class="btn btn-ghost btn-circle avatar">
+            <button class="btn btn-ghost btn-circle avatar" aria-label="User menu" aria-haspopup="true" aria-expanded="false">
                 <div class="w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
-                    <span class="text-lg leading-none">{{ user.email|slice:":2"|upper }}</span>
+                    <span class="text-lg leading-none" aria-hidden="true">{{ user.email|slice:":2"|upper }}</span>
                 </div>
-            </label>
-            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                <li><a>Profile</a></li>
-                <li><a>Settings</a></li>
-                <li><a href="{% url 'accounts:logout' %}">Logout</a></li>
+            </button>
+            <ul class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52" role="menu">
+                <li role="none"><a role="menuitem" href="#">Profile</a></li>
+                <li role="none"><a role="menuitem" href="#">Settings</a></li>
+                <li role="none"><a role="menuitem" href="{% url 'accounts:logout' %}">Logout</a></li>
             </ul>
         </div>
     </div>
-</div>
+</nav>

@@ -1,0 +1,115 @@
+<!-- Grading Scale Form Modal -->
+<div class="modal modal-open" id="grading-scale-modal">
+    <div class="modal-box max-w-2xl">
+        <form method="post"
+              hx-post="{% if scale %}{% url 'dashboard:grading_scale_edit' scale.pk %}{% else %}{% url 'dashboard:grading_scale_add' %}{% endif %}"
+              hx-target="#grading-scales-section"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-chart-bar text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            <!-- Scale Details -->
+            <div class="space-y-4 mb-6">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs">Name <span class="text-error">*</span></span></label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.name.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                    <div class="form-control">
+                        <label class="label py-0.5"><span class="label-text text-xs">Level Type <span class="text-error">*</span></span></label>
+                        {{ form.level_type }}
+                        {% if form.level_type.errors %}
+                        <label class="label py-0"><span class="label-text-alt text-error text-xs">{{ form.level_type.errors.0 }}</span></label>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-control">
+                    <label class="label py-0.5"><span class="label-text text-xs">Description</span></label>
+                    {{ form.description }}
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            {{ form.is_default }}
+                            <span class="label-text text-xs">Default for this level</span>
+                        </label>
+                    </div>
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-2">
+                            {{ form.is_active }}
+                            <span class="label-text text-xs">Active</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grade Levels -->
+            <div class="border-t border-base-200 pt-4">
+                <h4 class="font-semibold text-sm mb-3 flex items-center gap-2">
+                    <i class="fas fa-list-ol text-primary"></i> Grade Definitions
+                </h4>
+
+                {{ formset.management_form }}
+
+                <div class="overflow-x-auto">
+                    <table class="table table-xs">
+                        <thead class="bg-base-200">
+                            <tr>
+                                <th>Grade</th>
+                                <th>Min Score</th>
+                                <th>Max Score</th>
+                                <th>Description</th>
+                                <th>Grade Point</th>
+                                <th>Order</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="grade-levels-body">
+                            {% for level_form in formset %}
+                            <tr class="grade-level-row">
+                                <td>{{ level_form.id }}{{ level_form.grade }}</td>
+                                <td>{{ level_form.min_score }}</td>
+                                <td>{{ level_form.max_score }}</td>
+                                <td>{{ level_form.description }}</td>
+                                <td>{{ level_form.grade_point }}</td>
+                                <td>{{ level_form.order }}</td>
+                                <td>
+                                    {% if level_form.instance.pk %}
+                                    {{ level_form.DELETE }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="text-xs text-base-content/60 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    For WASSCE: A1 (80-100), B2 (75-79), B3 (70-74), C4 (65-69), C5 (60-64), C6 (55-59), D7 (50-54), E8 (45-49), F9 (0-44)
+                </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('grading-scale-modal').remove()">
+                    Cancel
+                </button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('grading-scale-modal').remove()"></div>
+</div>

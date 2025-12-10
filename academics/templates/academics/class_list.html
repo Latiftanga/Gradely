@@ -1,0 +1,96 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div>
+        <h1 class="text-2xl font-bold">Classes</h1>
+        <p class="text-base-content/60 text-sm">Manage class sections and assignments</p>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-outline btn-sm"
+                hx-get="{% url 'academics:promotion' %}"
+                hx-target="#main-content"
+                hx-swap="innerHTML"
+                hx-push-url="true">
+            <i class="fas fa-user-graduate"></i> Promote Students
+        </button>
+        <button class="btn btn-primary btn-sm"
+                hx-get="{% url 'academics:class_add' %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-plus"></i> Add Class
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats stats-horizontal shadow mb-4 w-full">
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-primary">
+            <i class="fas fa-chalkboard text-2xl"></i>
+        </div>
+        <div class="stat-title">Total Classes</div>
+        <div class="stat-value text-primary text-2xl">{{ classes.paginator.count|default:classes|length }}</div>
+    </div>
+    <div class="stat py-3 px-4">
+        <div class="stat-figure text-success">
+            <i class="fas fa-check-circle text-2xl"></i>
+        </div>
+        <div class="stat-title">Active</div>
+        <div class="stat-value text-success text-2xl">-</div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card bg-base-100 shadow mb-4">
+    <div class="card-body p-3">
+        <form id="class-filters" class="flex flex-wrap gap-2">
+            <select class="select select-bordered select-sm"
+                    name="academic_year"
+                    hx-get="{% url 'academics:class_list_partial' %}"
+                    hx-trigger="change"
+                    hx-target="#class-list"
+                    hx-swap="outerHTML"
+                    hx-include="#class-filters">
+                {% for year in academic_years %}
+                    <option value="{{ year.pk }}" {% if selected_year.pk == year.pk %}selected{% endif %}>
+                        {{ year.name }}{% if year.is_current %} (Current){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+            <select class="select select-bordered select-sm"
+                    name="grade_level"
+                    hx-get="{% url 'academics:class_list_partial' %}"
+                    hx-trigger="change"
+                    hx-target="#class-list"
+                    hx-swap="outerHTML"
+                    hx-include="#class-filters">
+                <option value="">All Grade Levels</option>
+                {% for level in grade_levels %}
+                    <option value="{{ level.pk }}" {% if selected_grade_level == level.pk|stringformat:"s" %}selected{% endif %}>{{ level.name }}</option>
+                {% endfor %}
+            </select>
+            <select class="select select-bordered select-sm"
+                    name="status"
+                    hx-get="{% url 'academics:class_list_partial' %}"
+                    hx-trigger="change"
+                    hx-target="#class-list"
+                    hx-swap="outerHTML"
+                    hx-include="#class-filters">
+                <option value="">All Status</option>
+                <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+        </form>
+    </div>
+</div>
+
+<!-- Class List -->
+{% include 'academics/partials/class_list.html' %}
+
+<script>
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

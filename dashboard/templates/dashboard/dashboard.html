@@ -56,26 +56,33 @@
     </style>
 </head>
 <body class="bg-base-200">
+    <!-- Skip Navigation Link -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-primary-content focus:px-4 focus:py-2 focus:rounded">
+        Skip to main content
+    </a>
+
     <div class="flex h-screen">
         <!-- Collapsible Sidebar -->
-        <aside id="main-sidebar" class="w-64 bg-base-100 text-base-content flex flex-col fixed top-0 left-0 h-full z-20">
-            <ul class="menu p-4 flex-1">
-                <li class="p-4">
-                    <a href="{% url 'dashboard:main' %}" class="text-2xl font-bold flex items-center gap-2">
-                        {% if request.tenant.logo %}
-                            <img src="{{ request.tenant.logo.url }}" alt="{{ request.tenant.short_name }} Logo" class="h-8 w-8 rounded-full">
-                        {% else %}
-                            <i class="fas fa-graduation-cap text-primary"></i> 
-                        {% endif %}
-                        <span class="sidebar-logo-text">{{ request.tenant.short_name }}</span>
-                    </a>
-                </li>
-                {% user_sidebar_menu %}
-            </ul>
+        <aside id="main-sidebar" class="w-64 bg-base-100 text-base-content flex flex-col fixed top-0 left-0 h-full z-20" aria-label="Main navigation">
+            <nav class="menu p-4 flex-1" aria-label="Primary navigation">
+                <ul>
+                    <li class="p-4">
+                        <a href="{% url 'dashboard:main' %}" class="text-2xl font-bold flex items-center gap-2" aria-label="Go to dashboard home">
+                            {% if request.tenant.logo %}
+                                <img src="{{ request.tenant.logo.url }}" alt="{{ request.tenant.short_name }} Logo" class="h-8 w-8 rounded-full" width="32" height="32">
+                            {% else %}
+                                <i class="fas fa-graduation-cap text-primary" aria-hidden="true"></i>
+                            {% endif %}
+                            <span class="sidebar-logo-text">{{ request.tenant.short_name }}</span>
+                        </a>
+                    </li>
+                    {% user_sidebar_menu %}
+                </ul>
+            </nav>
             <!-- Sidebar Toggle Button -->
             <div class="p-4 border-t border-base-300">
-                <button id="sidebar-toggle-button" class="btn btn-ghost w-full justify-start">
-                    <i class="fas fa-chevron-left toggle-arrow transition-transform"></i>
+                <button id="sidebar-toggle-button" class="btn btn-ghost w-full justify-start" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="main-sidebar">
+                    <i class="fas fa-chevron-left toggle-arrow transition-transform" aria-hidden="true"></i>
                     <span class="sidebar-text">Collapse</span>
                 </button>
             </div>
@@ -86,7 +93,7 @@
             {% user_navbar %}
 
             <!-- Page Content -->
-            <main id="main-content" class="flex-1 p-4 lg:p-8"
+            <main id="main-content" class="flex-1 p-4 lg:p-8" role="main" aria-live="polite"
                   {% if initial_main_content_url %}
                       hx-get="{{ initial_main_content_url }}" hx-trigger="load once" hx-swap="innerHTML"
                   {% else %}
@@ -94,69 +101,12 @@
                   {% endif %}
             >
                 <div class="flex justify-center items-center h-full">
-                    <span class="loading loading-spinner loading-lg"></span>
+                    <span class="loading loading-spinner loading-lg" role="status" aria-label="Loading dashboard content"></span>
                 </div>
             </main>
         </div>
     </div>
 
-    <script>
-        // Theme Management
-        (function() {
-            const theme = localStorage.getItem('theme');
-            const checkbox = document.querySelector('input[type="checkbox"][onchange="toggleTheme()"]');
-            if (theme) {
-                document.documentElement.setAttribute('data-theme', theme);
-                if (theme === 'dark' && checkbox) checkbox.checked = true;
-            } else {
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (prefersDark) {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                    if (checkbox) checkbox.checked = true;
-                }
-            }
-        })();
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-
-        // Collapsible Sidebar
-        (function() {
-            const sidebar = document.getElementById('main-sidebar');
-            const container = document.getElementById('main-container');
-            const toggleButton = document.getElementById('sidebar-toggle-button');
-            const sidebarState = localStorage.getItem('sidebarState');
-
-            const collapseSidebar = () => {
-                sidebar.classList.add('is-collapsed');
-                container.classList.add('is-collapsed');
-                localStorage.setItem('sidebarState', 'collapsed');
-            };
-
-            const expandSidebar = () => {
-                sidebar.classList.remove('is-collapsed');
-                container.classList.remove('is-collapsed');
-                localStorage.setItem('sidebarState', 'expanded');
-            };
-
-            // Set initial state from localStorage
-            if (sidebarState === 'collapsed') {
-                collapseSidebar();
-            }
-
-            // Toggle on button click
-            toggleButton.addEventListener('click', () => {
-                if (sidebar.classList.contains('is-collapsed')) {
-                    expandSidebar();
-                } else {
-                    collapseSidebar();
-                }
-            });
-        })();
-    </script>
+    <script src="{% static 'dashboard/js/dashboard.js' %}" defer></script>
 </body>
 </html>

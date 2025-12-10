@@ -1,0 +1,294 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-5">
+    <div class="flex items-center gap-3">
+        <div class="avatar placeholder">
+            <div class="bg-primary text-primary-content rounded-full w-11 h-11">
+                <i class="fas fa-file-import"></i>
+            </div>
+        </div>
+        <div>
+            <h1 class="text-xl font-bold">Bulk Import Teachers</h1>
+            <p class="text-base-content/60 text-sm">Import multiple teachers from CSV or Excel file</p>
+        </div>
+    </div>
+    <button class="btn btn-ghost btn-xs"
+            hx-get="{% url 'teachers:list' %}"
+            hx-target="#main-content"
+            hx-push-url="true">
+        <i class="fas fa-arrow-left"></i> Back to List
+    </button>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <!-- Main Content -->
+    <div class="xl:col-span-2 space-y-4">
+        <!-- Result Alert -->
+        {% if result %}
+        <div class="alert {% if result.status == 'success' %}alert-success{% elif result.status == 'validated' %}alert-info{% elif result.status == 'partial' %}alert-warning{% else %}alert-error{% endif %} shadow-sm">
+            {% if result.status == 'success' %}
+                <i class="fas fa-check-circle"></i>
+            {% elif result.status == 'validated' %}
+                <i class="fas fa-clipboard-check"></i>
+            {% elif result.status == 'partial' %}
+                <i class="fas fa-exclamation-triangle"></i>
+            {% else %}
+                <i class="fas fa-times-circle"></i>
+            {% endif %}
+            <div>
+                <h3 class="font-bold text-sm">{{ result.message }}</h3>
+                {% if result.stats %}
+                <div class="text-xs mt-1 flex gap-3 flex-wrap">
+                    {% if result.stats.accounts_created is not None %}
+                        <span><i class="fas fa-user-check"></i> {{ result.stats.accounts_created }} accounts</span>
+                        <span><i class="fas fa-envelope"></i> {{ result.stats.emails_sent }} emails sent</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% if result.status == 'success' %}
+            <button class="btn btn-sm btn-ghost"
+                    hx-get="{% url 'teachers:list' %}"
+                    hx-target="#main-content"
+                    hx-push-url="true">
+                View Teachers
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Validation Errors -->
+        {% if validation_errors %}
+        <div class="card bg-error/10 border border-error">
+            <div class="card-body p-4">
+                <h3 class="font-bold text-sm text-error flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Validation Errors ({{ validation_errors|length }})
+                </h3>
+                <div class="max-h-48 overflow-y-auto">
+                    <ul class="list-disc list-inside text-xs space-y-0.5">
+                        {% for error in validation_errors %}
+                        <li class="text-error">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Upload Form -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-upload text-primary text-xs"></i>
+                    Upload File
+                </h2>
+
+                <form method="post"
+                      enctype="multipart/form-data"
+                      hx-post="{% url 'teachers:bulk_import' %}"
+                      hx-target="#main-content"
+                      hx-swap="innerHTML"
+                      hx-encoding="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="space-y-4">
+                        <!-- File Input -->
+                        <div class="form-control">
+                            <label class="label py-1">
+                                <span class="label-text text-xs">Select File <span class="text-error">*</span></span>
+                            </label>
+                            {{ form.file }}
+                            {% if form.file.errors %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-error text-xs">{{ form.file.errors.0 }}</span>
+                            </label>
+                            {% endif %}
+                            <label class="label py-0">
+                                <span class="label-text-alt text-base-content/60 text-xs">Supported formats: CSV, XLSX (max 5MB)</span>
+                            </label>
+                        </div>
+
+                        <!-- Send Credentials Checkbox -->
+                        <div class="form-control">
+                            <label class="label cursor-pointer justify-start gap-3 py-2">
+                                {{ form.send_credentials }}
+                                <div>
+                                    <span class="label-text text-xs font-medium">Send login credentials</span>
+                                    <p class="text-[10px] text-base-content/60">Generate password and email credentials to teachers</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-2 pt-2">
+                            <button type="submit" name="action" value="validate" class="btn btn-outline btn-sm flex-1">
+                                <i class="fas fa-check-double"></i> Validate
+                            </button>
+                            <button type="submit" name="action" value="import" class="btn btn-primary btn-sm flex-1">
+                                <i class="fas fa-file-import"></i> Import
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview Table -->
+        {% if preview_data %}
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-eye text-primary text-xs"></i>
+                    Preview (First 5 rows)
+                    {% if validation_stats %}
+                    <span class="badge badge-info badge-xs ml-auto">{{ validation_stats.total }} total</span>
+                    {% endif %}
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="table table-xs">
+                        <thead>
+                            <tr>
+                                <th>Staff ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Employment</th>
+                                <th>Date Employed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in preview_data %}
+                            <tr>
+                                <td class="font-mono text-xs">{{ row.staff_id }}</td>
+                                <td>{{ row.first_name }} {{ row.last_name }}</td>
+                                <td class="text-xs">
+                                    <span class="text-success">{{ row.email }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-ghost badge-xs">{{ row.employment_status|default:"full_time" }}</span>
+                                </td>
+                                <td class="text-xs">{{ row.date_employed }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Import Errors -->
+        {% if result.errors %}
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-exclamation-circle text-warning text-xs"></i>
+                    Import Errors ({{ result.errors|length }})
+                </h2>
+                <div class="max-h-48 overflow-y-auto">
+                    <ul class="list-disc list-inside text-xs space-y-0.5">
+                        {% for error in result.errors %}
+                        <li class="text-warning">{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="space-y-4">
+        <!-- Download Templates -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-download text-primary text-xs"></i>
+                    Download Template
+                </h2>
+                <p class="text-xs text-base-content/60 mb-3">
+                    Download a template file with the correct column structure.
+                </p>
+                <div class="space-y-2">
+                    <a href="{% url 'teachers:download_template' 'csv' %}" class="btn btn-outline btn-sm btn-block">
+                        <i class="fas fa-file-csv"></i> CSV Template
+                    </a>
+                    <a href="{% url 'teachers:download_template' 'xlsx' %}" class="btn btn-outline btn-sm btn-block">
+                        <i class="fas fa-file-excel"></i> Excel Template
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Required Columns -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-list-check text-primary text-xs"></i>
+                    Required Columns
+                </h2>
+                <ul class="space-y-1">
+                    {% for col in required_columns %}
+                    <li class="flex items-center gap-2 text-xs">
+                        <span class="badge badge-error badge-xs">*</span>
+                        <code class="bg-base-200 px-1 rounded">{{ col }}</code>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Optional Columns -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm border-b border-base-200 pb-2 mb-3">
+                    <i class="fas fa-list text-primary text-xs"></i>
+                    Optional Columns
+                </h2>
+                <div class="max-h-48 overflow-y-auto">
+                    <ul class="space-y-1">
+                        {% for col in optional_columns %}
+                        <li class="text-xs flex items-center gap-1">
+                            <code class="bg-base-200 px-1 rounded">{{ col }}</code>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help -->
+        <div class="card bg-info/10 border border-info">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm text-info mb-2">
+                    <i class="fas fa-info-circle text-xs"></i>
+                    Tips
+                </h2>
+                <ul class="text-xs space-y-1.5 text-info">
+                    <li><i class="fas fa-check mr-1"></i> Use <strong>Validate</strong> first to check for errors</li>
+                    <li><i class="fas fa-envelope mr-1"></i> <strong>Email is required</strong> for teacher accounts</li>
+                    <li><i class="fas fa-venus-mars mr-1"></i> Gender: <code class="bg-info/20 px-1 rounded">M</code> or <code class="bg-info/20 px-1 rounded">F</code></li>
+                    <li><i class="fas fa-calendar mr-1"></i> Dates: <code class="bg-info/20 px-1 rounded">YYYY-MM-DD</code></li>
+                    <li><i class="fas fa-briefcase mr-1"></i> Employment: <code class="bg-info/20 px-1 rounded">full_time</code>, <code class="bg-info/20 px-1 rounded">part_time</code>, <code class="bg-info/20 px-1 rounded">contract</code>, <code class="bg-info/20 px-1 rounded">volunteer</code></li>
+                    <li><i class="fas fa-graduation-cap mr-1"></i> Qualification: <code class="bg-info/20 px-1 rounded">diploma</code>, <code class="bg-info/20 px-1 rounded">bachelors</code>, <code class="bg-info/20 px-1 rounded">masters</code>, <code class="bg-info/20 px-1 rounded">phd</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Account Info -->
+        <div class="card bg-warning/10 border border-warning">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm text-warning mb-2">
+                    <i class="fas fa-user-clock text-xs"></i>
+                    About Accounts
+                </h2>
+                <ul class="text-xs space-y-1.5 text-warning">
+                    <li><i class="fas fa-check mr-1"></i> <strong>With checkbox ON:</strong> Random password generated and emailed</li>
+                    <li><i class="fas fa-times mr-1"></i> <strong>With checkbox OFF:</strong> Accounts created without email notification</li>
+                    <li><i class="fas fa-key mr-1"></i> Teachers must change password on first login</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

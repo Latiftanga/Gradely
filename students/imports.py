@@ -5,13 +5,48 @@ Supports CSV and XLSX file formats.
 import io
 import csv
 import uuid
+import secrets
+import string
 from datetime import datetime
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.conf import settings
 import pandas as pd
 
 from accounts.models import User
 from .models import Student
+
+
+def generate_random_password(length=12):
+    """Generate a secure random password."""
+    alphabet = string.ascii_letters + string.digits + "!@#$%&*"
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+
+def send_credentials_email(email, password, first_name, last_name):
+    """Send login credentials to the student's email."""
+    subject = 'Your Student Account Has Been Created'
+    message = f"""
+Hello {first_name} {last_name},
+
+Your student account has been created. Here are your login credentials:
+
+Email: {email}
+Password: {password}
+
+Please log in and change your password immediately for security purposes.
+
+Best regards,
+School Administration
+"""
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=False,
+    )
 
 
 # Expected columns in the import file
@@ -300,14 +335,14 @@ def validate_import_file(file):
 
 
 @transaction.atomic
-def process_import_file(file, default_password='changeme123', create_accounts=True):
+def process_import_file(file, create_accounts=True):
     """
     Process the import file and create students.
 
     Args:
         file: The uploaded file
-        default_password: Default password for new accounts
-        create_accounts: If True, create user accounts. If False, generate placeholder emails.
+        create_accounts: If True, create user accounts with random passwords and send emails.
+                        If False, generate placeholder emails without login access.
 
     Returns: (success_count, error_count, errors, stats)
     """
@@ -321,6 +356,7 @@ def process_import_file(file, default_password='changeme123', create_accounts=Tr
     errors = []
     accounts_created = 0
     placeholders_created = 0
+    emails_sent = 0
 
     for idx, row in df.iterrows():
         row_num = idx + 2
@@ -362,8 +398,19 @@ def process_import_file(file, default_password='changeme123', create_accounts=Tr
 
             # Create user
             if has_real_email and create_accounts:
-                user = User.objects.create_studentuser(email=email, password=default_password)
+                # Generate random password
+                password = generate_random_password()
+                user = User.objects.create_studentuser(email=email, password=password)
+                user.force_password_change = True
+                user.save()
                 accounts_created += 1
+
+                # Send credentials email
+                try:
+                    send_credentials_email(email, password, first_name, last_name)
+                    emails_sent += 1
+                except Exception as e:
+                    errors.append(f"Row {row_num}: Account created but email failed - {str(e)}")
             else:
                 # Create user with placeholder email but inactive/unusable password
                 user = User.objects.create_studentuser(email=email, password=None)
@@ -449,6 +496,7 @@ def process_import_file(file, default_password='changeme123', create_accounts=Tr
     stats = {
         'accounts_created': accounts_created,
         'placeholders_created': placeholders_created,
+        'emails_sent': emails_sent,
     }
 
     return success_count, error_count, errors, stats

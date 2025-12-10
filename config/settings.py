@@ -50,6 +50,7 @@ TENANT_APPS = [
     'academics',
     'teachers',
     'students',
+    'grades',
 ]
 
 INSTALLED_APPS = SHARED_APPS + [
@@ -69,6 +70,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django_htmx.middleware.HtmxMiddleware',  # Add HTMX middleware
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'accounts.middleware.ForcePasswordChangeMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'accounts.middleware.BlockSchoolAdminMiddleware',
@@ -213,6 +215,22 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+
+
+# Email Configuration
+# In development, emails are printed to the console
+# In production, configure SMTP settings via environment variables
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@gradely.local')
 
 
 # Logging Configuration (optional but recommended)

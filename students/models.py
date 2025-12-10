@@ -17,6 +17,14 @@ class Student(models.Model):
         ('boarder', 'Boarder'),
     )
 
+    STATUS_CHOICES = (
+        ('active', 'Active'),
+        ('graduated', 'Graduated'),
+        ('withdrawn', 'Withdrawn'),
+        ('transferred', 'Transferred'),
+        ('suspended', 'Suspended'),
+    )
+
     # User relationship
     user = models.OneToOneField(
         User,
@@ -75,8 +83,24 @@ class Student(models.Model):
 
     # Status
     is_active = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=15,
+        choices=STATUS_CHOICES,
+        default='active'
+    )
     withdrawal_date = models.DateField(null=True, blank=True)
     withdrawal_reason = models.TextField(blank=True)
+
+    # Graduation info
+    graduation_date = models.DateField(null=True, blank=True)
+    graduation_year = models.ForeignKey(
+        'academics.AcademicYear',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='graduated_students',
+        help_text="Academic year when student graduated"
+    )
 
     date_enrolled = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

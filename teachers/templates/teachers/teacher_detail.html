@@ -1,0 +1,259 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div class="flex items-center gap-3">
+        <div class="avatar placeholder">
+            <div class="bg-primary text-primary-content rounded-full w-14 h-14">
+                <span class="text-xl">{{ teacher.first_name|slice:":1" }}{{ teacher.last_name|slice:":1" }}</span>
+            </div>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold">{{ teacher.get_full_name }}</h1>
+            <p class="text-base-content/60">{{ teacher.staff_id }} &bull; {{ teacher.get_qualification_display }}</p>
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-outline btn-sm"
+                hx-get="{% url 'teachers:update' teacher.pk %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-error btn-outline btn-sm"
+                hx-get="{% url 'teachers:delete' teacher.pk %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-trash"></i> Delete
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Left Column - Basic Info -->
+    <div class="lg:col-span-2 space-y-4">
+        <!-- Personal Information -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-user text-primary"></i> Personal Information
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-base-content/60">Full Name</p>
+                        <p class="font-medium">{{ teacher.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Gender</p>
+                        <p class="font-medium">{{ teacher.get_gender_display|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Date of Birth</p>
+                        <p class="font-medium">{{ teacher.date_of_birth|date:"M d, Y"|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Age</p>
+                        <p class="font-medium">{{ teacher.age|default:"-" }} years</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Email</p>
+                        <p class="font-medium">{{ teacher.user.email }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Phone</p>
+                        <p class="font-medium">{{ teacher.phone_number|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment Details -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-briefcase text-primary"></i> Employment Details
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-sm text-base-content/60">Staff ID</p>
+                        <p class="font-medium font-mono">{{ teacher.staff_id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Employment Status</p>
+                        <p>
+                            {% if teacher.employment_status == 'full_time' %}
+                                <span class="badge badge-info badge-sm">Full Time</span>
+                            {% elif teacher.employment_status == 'part_time' %}
+                                <span class="badge badge-secondary badge-sm">Part Time</span>
+                            {% elif teacher.employment_status == 'contract' %}
+                                <span class="badge badge-warning badge-sm">Contract</span>
+                            {% else %}
+                                <span class="badge badge-outline badge-sm">{{ teacher.get_employment_status_display }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Date Employed</p>
+                        <p class="font-medium">{{ teacher.date_employed|date:"M d, Y" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Years of Service</p>
+                        <p class="font-medium">{{ teacher.years_of_service }} years</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Qualification</p>
+                        <p class="font-medium">{{ teacher.get_qualification_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Specialization</p>
+                        <p class="font-medium">{{ teacher.specialization|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classes Managed -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-chalkboard text-primary"></i> Classes Managed (Form Teacher)
+                </h3>
+                {% if teacher.managed_classes.all %}
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {% for class in teacher.managed_classes.all %}
+                    <a href="{% url 'academics:class_detail' class.pk %}"
+                       hx-get="{% url 'academics:class_detail' class.pk %}"
+                       hx-target="#main-content"
+                       hx-push-url="true"
+                       class="btn btn-ghost btn-sm justify-start">
+                        <i class="fas fa-door-open text-info"></i>
+                        {{ class }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-base-content/60 text-sm">No classes assigned as form teacher</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Subject Assignments -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-book text-primary"></i> Subject Assignments
+                </h3>
+                {% if teacher.subject_assignments.all %}
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead class="bg-base-200">
+                            <tr>
+                                <th>Subject</th>
+                                <th>Class</th>
+                                <th>Periods/Week</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in teacher.subject_assignments.all %}
+                            <tr>
+                                <td>{{ assignment.subject.name }}</td>
+                                <td>{{ assignment.class_instance }}</td>
+                                <td>{{ assignment.periods_per_week }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-base-content/60 text-sm">No subject assignments</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column - Status & IDs -->
+    <div class="space-y-4">
+        <!-- Status Card -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-toggle-on text-primary"></i> Status
+                </h3>
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-base-content/60">Status</span>
+                        {% if teacher.is_active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-error">Inactive</span>
+                        {% endif %}
+                    </div>
+                    {% if not teacher.is_active and teacher.termination_date %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-base-content/60">Termination Date</span>
+                        <span>{{ teacher.termination_date|date:"M d, Y" }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Identification -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-id-card text-primary"></i> Identification
+                </h3>
+                <div class="flex flex-col gap-2">
+                    <div>
+                        <p class="text-sm text-base-content/60">Ghana Card</p>
+                        <p class="font-medium font-mono">{{ teacher.ghana_card_number|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">SSNIT Number</p>
+                        <p class="font-medium font-mono">{{ teacher.ssnit_number|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Contact -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-phone-alt text-primary"></i> Emergency Contact
+                </h3>
+                <div class="flex flex-col gap-2">
+                    <div>
+                        <p class="text-sm text-base-content/60">Name</p>
+                        <p class="font-medium">{{ teacher.emergency_contact_name|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-base-content/60">Phone</p>
+                        <p class="font-medium">{{ teacher.emergency_contact_phone|default:"-" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h3 class="font-semibold flex items-center gap-2 mb-3">
+                    <i class="fas fa-map-marker-alt text-primary"></i> Address
+                </h3>
+                <p class="text-sm">{{ teacher.residential_address|default:"No address provided"|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.body.addEventListener('teacherUpdated', function() {
+        htmx.ajax('GET', '{% url "teachers:detail" teacher.pk %}', {target: '#main-content', swap: 'innerHTML'});
+    });
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

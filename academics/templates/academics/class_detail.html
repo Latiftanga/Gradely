@@ -1,0 +1,104 @@
+{% include 'dashboard/partials/breadcrumb.html' %}
+
+<!-- Header -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 mb-4">
+    <div class="flex items-center gap-4">
+        <div class="avatar placeholder">
+            <div class="bg-primary text-primary-content rounded-xl w-14 h-14">
+                <i class="fas fa-chalkboard text-xl"></i>
+            </div>
+        </div>
+        <div>
+            <h1 class="text-2xl font-bold">{{ class }}</h1>
+            <p class="text-base-content/60 text-sm">{{ class.grade_level.name }}{% if class.programme %} - {{ class.programme.name }}{% endif %}</p>
+        </div>
+    </div>
+    <div class="flex gap-2">
+        <button class="btn btn-ghost btn-sm"
+                hx-get="{% url 'academics:classes' %}"
+                hx-target="#main-content"
+                hx-push-url="true">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <button class="btn btn-warning btn-sm"
+                hx-get="{% url 'academics:class_edit' class.pk %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-edit"></i> Edit
+        </button>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <!-- Left Column - Details -->
+    <div class="lg:col-span-2 space-y-4">
+        <!-- Class Info Card -->
+        <div class="card bg-base-100 shadow">
+            <div class="card-body p-4">
+                <h2 class="card-title text-sm">
+                    <i class="fas fa-info-circle text-primary"></i> Class Information
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+                    <div>
+                        <p class="text-xs text-base-content/60">Grade Level</p>
+                        <p class="font-medium">{{ class.grade_level.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Section</p>
+                        <p class="font-medium">{{ class.section|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Programme</p>
+                        <p class="font-medium">{{ class.programme|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Class Teacher</p>
+                        <p class="font-medium">{{ class.class_teacher.get_full_name|default:"Unassigned" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Room</p>
+                        <p class="font-medium">{{ class.room_number|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Building</p>
+                        <p class="font-medium">{{ class.building|default:"-" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Capacity</p>
+                        <p class="font-medium">{{ class.capacity }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-base-content/60">Status</p>
+                        {% if class.is_active %}
+                            <span class="badge badge-success badge-sm">Active</span>
+                        {% else %}
+                            <span class="badge badge-ghost badge-sm">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subjects Section -->
+        <div id="class-subjects-section">
+            {% include 'academics/partials/class_subjects_section.html' %}
+        </div>
+
+        <!-- Students Section -->
+        <div id="class-students-section">
+            {% include 'academics/partials/class_students_section.html' %}
+        </div>
+    </div>
+
+    <!-- Right Column - Stats -->
+    <div>
+        {% include 'academics/partials/class_stats_section.html' %}
+    </div>
+</div>
+
+<script>
+    document.body.addEventListener('closeModal', function() {
+        const modal = document.querySelector('.modal');
+        if (modal) modal.remove();
+    });
+</script>

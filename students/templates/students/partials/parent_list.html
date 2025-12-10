@@ -1,0 +1,88 @@
+<!-- Parents/Guardians Section -->
+<div class="flex items-center justify-between border-b border-base-200 pb-2 mb-3">
+    <h2 class="card-title text-sm">
+        <i class="fas fa-users text-primary text-xs"></i>
+        Parents / Guardians
+    </h2>
+    <div class="flex items-center gap-2">
+        <span class="badge badge-ghost badge-sm">{{ student.parents.count }} contact(s)</span>
+        <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-xs btn-primary">
+                <i class="fas fa-plus"></i> Add
+            </label>
+            <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                <li>
+                    <a hx-get="{% url 'students:add_parent' student.pk %}"
+                       hx-target="body"
+                       hx-swap="beforeend">
+                        <i class="fas fa-user-plus"></i> Create New Parent
+                    </a>
+                </li>
+                <li>
+                    <a hx-get="{% url 'students:link_parent' student.pk %}"
+                       hx-target="body"
+                       hx-swap="beforeend">
+                        <i class="fas fa-link"></i> Link Existing Parent
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% if student.parents.exists %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    {% for parent in student.parents.all %}
+    <div class="flex items-start gap-3 p-3 bg-base-200/30 rounded-lg group relative">
+        <div class="avatar placeholder">
+            <div class="bg-neutral text-neutral-content rounded-full w-10 h-10">
+                <span class="text-sm">{{ parent.first_name|slice:":1" }}{{ parent.last_name|slice:":1" }}</span>
+            </div>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm truncate">{{ parent.get_full_name }}</p>
+            <p class="text-xs text-base-content/60">{{ parent.get_relationship_display }}</p>
+            <p class="font-mono text-xs mt-1">{{ parent.phone_number }}</p>
+            <div class="flex gap-1 mt-1">
+                {% if parent.is_primary_contact %}
+                    <span class="badge badge-success badge-xs">Primary</span>
+                {% endif %}
+                {% if parent.is_emergency_contact %}
+                    <span class="badge badge-warning badge-xs">Emergency</span>
+                {% endif %}
+                {% if parent.can_pickup_student %}
+                    <span class="badge badge-info badge-xs">Can Pickup</span>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Unlink Button -->
+        <button class="btn btn-ghost btn-xs text-error opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2"
+                hx-get="{% url 'students:unlink_parent' student.pk parent.pk %}"
+                hx-target="body"
+                hx-swap="beforeend"
+                title="Unlink parent">
+            <i class="fas fa-unlink"></i>
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-6">
+    <i class="fas fa-user-friends text-4xl text-base-content/20 mb-2"></i>
+    <p class="text-sm text-base-content/50">No parents/guardians linked</p>
+    <div class="flex justify-center gap-2 mt-3">
+        <button class="btn btn-sm btn-primary"
+                hx-get="{% url 'students:add_parent' student.pk %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-user-plus"></i> Create New
+        </button>
+        <button class="btn btn-sm btn-outline"
+                hx-get="{% url 'students:link_parent' student.pk %}"
+                hx-target="body"
+                hx-swap="beforeend">
+            <i class="fas fa-link"></i> Link Existing
+        </button>
+    </div>
+</div>
+{% endif %}

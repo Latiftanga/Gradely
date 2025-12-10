@@ -1,0 +1,99 @@
+<!-- Bulk Enrollment Modal -->
+<div class="modal modal-open" id="bulk-enrollment-modal">
+    <div class="modal-box max-w-2xl">
+        <form method="post"
+              hx-post="{% url 'academics:bulk_enrollment' class.pk %}"
+              hx-target="#class-students-section"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+
+            <h3 class="font-bold text-lg flex items-center gap-2 mb-4">
+                <i class="fas fa-users text-primary"></i>
+                {{ modal_title }}
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Academic Year -->
+                <div class="form-control">
+                    <label class="label py-0.5">
+                        <span class="label-text text-xs">Academic Year <span class="text-error">*</span></span>
+                    </label>
+                    <select name="academic_year" class="select select-bordered select-sm w-full" required>
+                        {% for year in academic_years %}
+                            <option value="{{ year.pk }}" {% if selected_year.pk == year.pk %}selected{% endif %}>
+                                {{ year.name }}{% if year.is_current %} (Current){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Student Selection -->
+                <div class="form-control">
+                    <label class="label py-0.5">
+                        <span class="label-text text-xs">Select Students to Enroll</span>
+                        <span class="label-text-alt text-xs text-base-content/60">{{ students|length }} available</span>
+                    </label>
+
+                    {% if students %}
+                    <div class="border border-base-300 rounded-lg max-h-64 overflow-y-auto">
+                        <!-- Select All -->
+                        <div class="flex items-center gap-2 p-2 bg-base-200 sticky top-0 border-b">
+                            <input type="checkbox" id="select-all" class="checkbox checkbox-primary checkbox-sm"
+                                   onchange="toggleAll(this.checked)">
+                            <label for="select-all" class="text-xs font-medium cursor-pointer">Select All</label>
+                        </div>
+
+                        <!-- Student List -->
+                        <div class="divide-y divide-base-200">
+                            {% for student in students %}
+                            <label class="flex items-center gap-3 p-2 hover:bg-base-100 cursor-pointer">
+                                <input type="checkbox" name="students" value="{{ student.pk }}"
+                                       class="checkbox checkbox-primary checkbox-sm student-checkbox">
+                                <div class="avatar placeholder">
+                                    <div class="bg-neutral text-neutral-content rounded-full w-8 h-8">
+                                        <span class="text-xs">{{ student.first_name.0 }}{{ student.last_name.0 }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">{{ student.get_full_name }}</p>
+                                    <p class="text-xs text-base-content/60">{{ student.student_id }}</p>
+                                </div>
+                                <span class="badge badge-ghost badge-xs">
+                                    {% if student.residential_status == 'boarder' %}Boarder{% else %}Day{% endif %}
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-base-content/60 border border-base-300 rounded-lg">
+                        <i class="fas fa-users-slash text-2xl mb-2"></i>
+                        <p class="text-sm">No students available for enrollment</p>
+                        <p class="text-xs mt-1">All active students may already be enrolled in classes for the selected year.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost btn-sm"
+                        onclick="document.getElementById('bulk-enrollment-modal').remove()">
+                    Cancel
+                </button>
+                {% if students %}
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-user-plus"></i> Enroll Selected
+                </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    <div class="modal-backdrop bg-black/50" onclick="document.getElementById('bulk-enrollment-modal').remove()"></div>
+</div>
+
+<script>
+function toggleAll(checked) {
+    document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = checked);
+}
+</script>

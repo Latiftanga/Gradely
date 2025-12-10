@@ -10,7 +10,7 @@ class StudentAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         'gender', 'current_class__grade_level', 'residential_status',
-        'is_active', 'current_class__academic_year'
+        'is_active'
     ]
     search_fields = [
         'student_id', 'first_name', 'last_name',

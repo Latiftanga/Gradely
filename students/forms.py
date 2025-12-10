@@ -1,7 +1,25 @@
+import uuid
+import secrets
+import string
 from django import forms
 from django.db import transaction
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 from .models import Student, Parent
 from accounts.models import User
+
+
+def generate_placeholder_email(student_id):
+    """Generate a placeholder email for students without user account."""
+    clean_id = student_id.lower().replace(' ', '_').replace('-', '_')
+    return f"{clean_id}.{uuid.uuid4().hex[:6]}@student.placeholder"
+
+
+def generate_random_password(length=12):
+    """Generate a secure random password."""
+    alphabet = string.ascii_letters + string.digits + "!@#$%&*"
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
 class StudentBulkImportForm(forms.Form):
@@ -10,18 +28,18 @@ class StudentBulkImportForm(forms.Form):
         label="Import File",
         help_text="Upload a CSV or XLSX file with student data."
     )
-    default_password = forms.CharField(
-        max_length=128,
-        initial='changeme123',
-        label="Default Password",
-        help_text="Initial password for all imported student accounts."
+    create_user_accounts = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Create login accounts",
+        help_text="If checked, login accounts will be created for students with email addresses."
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['file'].widget.attrs['class'] = 'file-input file-input-bordered file-input-sm w-full'
         self.fields['file'].widget.attrs['accept'] = '.csv,.xlsx,.xls'
-        self.fields['default_password'].widget.attrs['class'] = 'input input-bordered input-sm w-full'
+        self.fields['create_user_accounts'].widget.attrs['class'] = 'checkbox checkbox-primary checkbox-sm'
 
     def clean_file(self):
         file = self.cleaned_data.get('file')
@@ -107,39 +125,78 @@ class StudentForm(forms.ModelForm):
 
 class StudentCreateForm(StudentForm):
     """
-    A form specifically for creating a new Student, which also involves creating a new User account.
-    Inherits most fields from StudentForm, but adds email and password for user creation.
+    A form specifically for creating a new Student, with optional user account creation.
+    Inherits most fields from StudentForm, but adds email for user creation.
+    Password is auto-generated and sent via email.
     """
-    email = forms.EmailField(
-        required=True,
-        label="Student's Email",
-        help_text="This will be used for the student's login account."
+    create_user_account = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Create login account",
+        help_text="If checked, a login account will be created and credentials sent via email."
     )
-    password = forms.CharField(
-        widget=forms.PasswordInput,
-        required=True,
-        label="Initial Password",
-        help_text="Set an initial password for the student's account."
+    email = forms.EmailField(
+        required=False,
+        label="Student's Email",
+        help_text="Login credentials will be sent to this email address."
     )
 
     class Meta(StudentForm.Meta):
-        fields = ['email', 'password'] + StudentForm.Meta.fields
+        fields = ['create_user_account', 'email'] + StudentForm.Meta.fields
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Style the checkbox
+        self.fields['create_user_account'].widget.attrs['class'] = 'checkbox checkbox-primary checkbox-sm'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        create_account = cleaned_data.get('create_user_account')
+        email = cleaned_data.get('email')
+
+        if create_account:
+            if not email:
+                self.add_error('email', 'Email is required when creating a user account.')
+            elif User.objects.filter(email=email).exists():
+                self.add_error('email', 'A user with this email already exists.')
+
+        return cleaned_data
 
     @transaction.atomic
     def save(self, commit=True):
         """
         Override the save method to handle the creation of both a User and a Student.
+        If create_user_account is True, generates a random password and sends it via email.
+        If create_user_account is False, creates a placeholder user without login access.
         """
+        create_account = self.cleaned_data.get('create_user_account')
         email = self.cleaned_data.get('email')
-        password = self.cleaned_data.get('password')
+        student_id = self.cleaned_data.get('student_id')
+        first_name = self.cleaned_data.get('first_name')
+        last_name = self.cleaned_data.get('last_name')
 
-        # Check if user already exists
-        if User.objects.filter(email=email).exists():
-            self.add_error('email', 'A user with this email already exists.')
-            raise forms.ValidationError("User already exists.")
+        if create_account:
+            # Generate a random password
+            password = generate_random_password()
 
-        # Create the User instance
-        user = User.objects.create_studentuser(email=email, password=password)
+            # Create the User instance with login access
+            user = User.objects.create_studentuser(email=email, password=password)
+            user.force_password_change = True
+            user.save()
+
+            # Send email with credentials
+            self._send_credentials_email(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name
+            )
+        else:
+            # Create placeholder user without login access
+            placeholder_email = generate_placeholder_email(student_id)
+            user = User.objects.create_studentuser(email=placeholder_email, password=None)
+            user.set_unusable_password()
+            user.save()
 
         # Create the Student instance, but don't save it to the DB yet
         student = super().save(commit=False)
@@ -149,6 +206,30 @@ class StudentCreateForm(StudentForm):
             student.save()
 
         return student
+
+    def _send_credentials_email(self, email, password, first_name, last_name):
+        """Send login credentials to the student's email."""
+        subject = 'Your Student Account Has Been Created'
+        message = f"""
+Hello {first_name} {last_name},
+
+Your student account has been created. Here are your login credentials:
+
+Email: {email}
+Password: {password}
+
+Please log in and change your password immediately for security purposes.
+
+Best regards,
+School Administration
+"""
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
 
 
 class StudentUpdateForm(StudentForm):
@@ -247,41 +328,151 @@ class ParentForm(forms.ModelForm):
 class ParentCreateForm(ParentForm):
     """
     A form specifically for creating a new Parent with User account.
+    Password is auto-generated and sent via email.
     """
-    email = forms.EmailField(
-        required=True,
-        label="Parent's Email",
-        help_text="This will be used for the parent's login account."
+    create_user_account = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Create login account",
+        help_text="If checked, login credentials will be sent to the parent's email."
     )
-    password = forms.CharField(
-        widget=forms.PasswordInput,
-        required=True,
-        label="Initial Password",
-        help_text="Set an initial password for the parent's account."
+    email = forms.EmailField(
+        required=False,
+        label="Parent's Email",
+        help_text="Login credentials will be sent to this email address."
     )
 
     class Meta(ParentForm.Meta):
-        fields = ['email', 'password'] + ParentForm.Meta.fields
+        # Remove 'students' from fields - will be set in the view
+        fields = ['create_user_account', 'email'] + [
+            f for f in ParentForm.Meta.fields if f != 'students'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        self.student = kwargs.pop('student', None)
+        super().__init__(*args, **kwargs)
+        self.fields['create_user_account'].widget.attrs['class'] = 'checkbox checkbox-primary checkbox-sm'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        create_account = cleaned_data.get('create_user_account')
+        email = cleaned_data.get('email')
+
+        if create_account:
+            if not email:
+                self.add_error('email', 'Email is required when creating a user account.')
+            elif User.objects.filter(email=email).exists():
+                self.add_error('email', 'A user with this email already exists.')
+
+        return cleaned_data
 
     @transaction.atomic
     def save(self, commit=True):
+        create_account = self.cleaned_data.get('create_user_account')
         email = self.cleaned_data.get('email')
-        password = self.cleaned_data.get('password')
+        first_name = self.cleaned_data.get('first_name')
+        last_name = self.cleaned_data.get('last_name')
 
-        if User.objects.filter(email=email).exists():
-            self.add_error('email', 'A user with this email already exists.')
-            raise forms.ValidationError("User already exists.")
+        if create_account and email:
+            # Generate random password
+            password = generate_random_password()
 
-        # Create the User instance (assuming there's a create_parentuser method)
-        user = User.objects.create_user(email=email, password=password, role='parent')
+            # Create user with parent role
+            user = User.objects.create_user(email=email, password=password, role='parent')
+            user.force_password_change = True
+            user.save()
+
+            # Send credentials email
+            self._send_credentials_email(email, password, first_name, last_name)
+        else:
+            # Create placeholder user
+            placeholder_email = f"parent.{uuid.uuid4().hex[:8]}@parent.placeholder"
+            user = User.objects.create_user(email=placeholder_email, password=None, role='parent')
+            user.set_unusable_password()
+            user.save()
 
         parent = super().save(commit=False)
         parent.user = user
 
         if commit:
             parent.save()
-            # Save M2M relationships
-            self.save_m2m()
+            # Link to student if provided
+            if self.student:
+                parent.students.add(self.student)
+
+        return parent
+
+    def _send_credentials_email(self, email, password, first_name, last_name):
+        """Send login credentials to the parent's email."""
+        subject = 'Your Parent Account Has Been Created'
+        message = f"""
+Hello {first_name} {last_name},
+
+Your parent account has been created. Here are your login credentials:
+
+Email: {email}
+Password: {password}
+
+Please log in and change your password immediately for security purposes.
+
+Best regards,
+School Administration
+"""
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+
+class LinkExistingParentForm(forms.Form):
+    """
+    Form for linking an existing parent to a student.
+    """
+    parent = forms.ModelChoiceField(
+        queryset=Parent.objects.none(),
+        label="Select Parent",
+        help_text="Choose an existing parent to link to this student."
+    )
+    is_primary_contact = forms.BooleanField(
+        required=False,
+        label="Set as primary contact"
+    )
+    is_emergency_contact = forms.BooleanField(
+        required=False,
+        label="Set as emergency contact"
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.student = kwargs.pop('student', None)
+        super().__init__(*args, **kwargs)
+
+        # Get parents not already linked to this student
+        if self.student:
+            linked_parents = self.student.parents.all()
+            self.fields['parent'].queryset = Parent.objects.exclude(
+                pk__in=linked_parents.values_list('pk', flat=True)
+            )
+
+        # Apply styling
+        self.fields['parent'].widget.attrs['class'] = 'select select-bordered select-sm w-full'
+        self.fields['is_primary_contact'].widget.attrs['class'] = 'checkbox checkbox-primary checkbox-sm'
+        self.fields['is_emergency_contact'].widget.attrs['class'] = 'checkbox checkbox-primary checkbox-sm'
+
+    def save(self):
+        parent = self.cleaned_data['parent']
+
+        if self.student:
+            parent.students.add(self.student)
+
+            # Update contact preferences if set
+            if self.cleaned_data.get('is_primary_contact'):
+                parent.is_primary_contact = True
+            if self.cleaned_data.get('is_emergency_contact'):
+                parent.is_emergency_contact = True
+            parent.save()
 
         return parent
 

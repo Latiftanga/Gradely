@@ -1,0 +1,89 @@
+<div class="card bg-base-100 shadow overflow-hidden" id="subject-list">
+    <div class="overflow-x-auto">
+        <table class="table table-zebra">
+            <thead class="bg-base-200">
+                <tr>
+                    <th>Code</th>
+                    <th>Subject</th>
+                    <th>Type</th>
+                    <th>Credits</th>
+                    <th>Classes</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject in subjects %}
+                <tr class="hover">
+                    <td>
+                        <span class="badge badge-ghost badge-sm font-mono">{{ subject.code }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'academics:subject_detail' subject.pk %}"
+                           hx-get="{% url 'academics:subject_detail' subject.pk %}"
+                           hx-target="#main-content"
+                           hx-push-url="true"
+                           class="font-medium text-primary hover:underline">
+                            {{ subject.name }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if subject.subject_type == 'core' %}
+                            <span class="badge badge-info badge-sm">Core</span>
+                        {% else %}
+                            <span class="badge badge-secondary badge-sm">Elective</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ subject.credit_hours }}</td>
+                    <td>{{ subject.class_count|default:0 }}</td>
+                    <td>
+                        {% if subject.is_active %}
+                            <span class="badge badge-success badge-sm">Active</span>
+                        {% else %}
+                            <span class="badge badge-ghost badge-sm">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="join">
+                            <button class="btn btn-ghost btn-sm join-item"
+                                    hx-get="{% url 'academics:subject_detail' subject.pk %}"
+                                    hx-target="#main-content"
+                                    hx-push-url="true"
+                                    title="View">
+                                <i class="fas fa-eye text-info"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm join-item"
+                                    hx-get="{% url 'academics:subject_edit' subject.pk %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend"
+                                    title="Edit">
+                                <i class="fas fa-edit text-warning"></i>
+                            </button>
+                            <button class="btn btn-ghost btn-sm join-item"
+                                    hx-get="{% url 'academics:subject_delete' subject.pk %}"
+                                    hx-target="body"
+                                    hx-swap="beforeend"
+                                    title="Delete">
+                                <i class="fas fa-trash text-error"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-8 text-base-content/60">
+                        <i class="fas fa-book text-4xl mb-2"></i>
+                        <p>No subjects found</p>
+                        <button class="btn btn-primary btn-sm mt-2"
+                                hx-get="{% url 'academics:subject_add' %}"
+                                hx-target="body"
+                                hx-swap="beforeend">
+                            <i class="fas fa-plus"></i> Add First Subject
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
